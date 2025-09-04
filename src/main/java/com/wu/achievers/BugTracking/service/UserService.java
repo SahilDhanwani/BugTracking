@@ -78,13 +78,4 @@ public class UserService {
             return "Invalid credentials";
         }
     }
-
-    public List<User> sahil() {
-        List<User> arr = userRepo.findAll();
-        for(User x : arr) {
-            x.setPassword(passwordEncoder.encode(x.getPassword()));
-            userRepo.save(x);
-        }
-        return userRepo.findAll();
-    }
 }
