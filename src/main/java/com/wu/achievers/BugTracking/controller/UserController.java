@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,11 +26,11 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/users")
-    public List<User> getAllUsers(@RequestParam(required = false) Long managerId) {
-        if (managerId != null) {
-            return userService.getUsersByManagerId(managerId);
+    public List<User> getAllUsers(@RequestParam(required = false) Long managerId, @RequestHeader("Authorization") String token) {
+        if (managerId == null) {
+            return userService.getAllUsers(token);
         }
-        return userService.getAllUsers();
+        return userService.getUsersByManagerId(managerId, token);
     }
 
     @GetMapping("/users/{id}")
