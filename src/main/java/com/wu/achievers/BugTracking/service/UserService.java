@@ -4,16 +4,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.User;
 import com.wu.achievers.BugTracking.repository.UserRepo;
 import com.wu.achievers.BugTracking.util.JwtUtil;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class UserService {
@@ -30,8 +29,15 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public List<User> getAllUsers() {
-        return userRepo.findAll();
+    public List<User> getAllUsers(String token) {
+        String role = jwtUtil.extractRole(token);
+        if ("ADMIN".equals(role)) {
+            return userRepo.findAll();
+        } else if ("MANAGER".equals(role)) {
+            Long managerId = jwtUtil.extractUserId(token);
+            return userRepo.findByManagerID(managerId);
+        }
+        return userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
     }
 
     public Optional<User> getUserById(Long id) {
@@ -54,7 +60,7 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
-    public List<User> getUsersByManagerId(Long managerId) {
+    public List<User> getUsersByManagerId(Long managerId, String token) {
         return userRepo.findByManagerID(managerId);
     }
 
@@ -73,7 +79,7 @@ public class UserService {
                     new UsernamePasswordAuthenticationToken(email, password)
             );
             User user = userRepo.findByEmail(email).orElseThrow();
-            return jwtUtil.generateToken(email, user.getRole());
+            return jwtUtil.generateToken(email, user.getRole(), user.getUserID());
         } catch (AuthenticationException e) {
             return "Invalid credentials";
         }
