@@ -1,0 +1,12 @@
+Run below commands in SQL Command Line ::::
+
+        -- login as sys
+        sqlplus sys/your_sys_password@localhost:1521/XE as sysdba;
+
+        -- create directory and grant
+        CREATE OR REPLACE DIRECTORY dpump_dir AS 'C:\WUCODES2025\ORACLE\DPUMP';
+        GRANT READ, WRITE ON DIRECTORY dpump_dir TO scott;
+
+Run below commands in Windows CMD ::::
+
+        impdp scott/tiger@localhost:1521/XE tables=USERS,PROJECT,BUG directory=dpump_dir dumpfile=mytables.dmp logfile=mytables_imp.log table_exists_action=replace

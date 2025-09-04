@@ -62,9 +62,4 @@ public class UserController {
         userService.deleteUser(id);
         return null;
     }
-
-    @GetMapping("/sahil")
-    public List<User> getSahil() {
-        return userService.sahil();
-    }
 }
