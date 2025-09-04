@@ -9,4 +9,5 @@ Run below commands in SQL Command Line ::::
 
 Run below commands in Windows CMD ::::
 
+
         impdp scott/tiger@localhost:1521/XE tables=USERS,PROJECT,BUG directory=dpump_dir dumpfile=mytables.dmp logfile=mytables_imp.log table_exists_action=replace
