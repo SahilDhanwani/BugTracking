@@ -31,12 +31,10 @@ public class UserService {
 
     public List<User> getAllUsers(String token) {
         String role = jwtUtil.extractRole(token);
-        System.out.println("User Role: " + role); // Debugging line
         if ("Admin".equals(role)) {
             return userRepo.findAll();
         } else if ("Manager".equals(role)) {
             Long managerId = jwtUtil.extractUserId(token);
-            System.out.println("Manager ID: " + managerId); // Debugging line
             return userRepo.findByManagerID(managerId);
         }
         return userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
