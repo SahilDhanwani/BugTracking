@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.AuthenticationException;
@@ -29,11 +30,12 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/users")
-    public List<User> getAllUsers(Authentication authentication) {
-        String username = authentication.getName();
-        User currentUser = userService.findByUsername(username);
-
-        return userService.getUsersByRole(currentUser);
+    public List<User> getAllUsers(@RequestParam(required = false) Long managerId, @RequestHeader("Authorization") String token) {
+        System.out.println("Authorization Header SD: " + token); // Debugging line
+        if (managerId == null) {
+            return userService.getAllUsers(token);
+        }
+        return userService.getUsersByManagerId(managerId, token);
     }
 
     @GetMapping("/users/{id}")
@@ -93,10 +95,5 @@ public class UserController {
     public Void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return null;
-    }
-
-    @GetMapping("/sahil")
-    public List<User> getSahil() {
-        return userService.sahil();
     }
 }

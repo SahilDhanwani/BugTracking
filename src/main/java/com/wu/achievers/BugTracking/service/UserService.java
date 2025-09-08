@@ -4,16 +4,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.User;
 import com.wu.achievers.BugTracking.repository.UserRepo;
 import com.wu.achievers.BugTracking.util.JwtUtil;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class UserService {
@@ -30,20 +29,17 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // public List<User> getAllUsers() {
-    //     return userRepo.findAll();
-    // }
-
-    public List<User> getUsersByRole(User user) {
-        if (user.getRole().equals("ADMIN")) {
+    public List<User> getAllUsers(String token) {
+        String role = jwtUtil.extractRole(token);
+        System.out.println("User Role: " + role); // Debugging line
+        if ("Admin".equals(role)) {
             return userRepo.findAll();
-        } else if (user.getRole().equals("Manager")) {
-            return userRepo.findByManagerID(user.getUserID());
+        } else if ("Manager".equals(role)) {
+            Long managerId = jwtUtil.extractUserId(token);
+            System.out.println("Manager ID: " + managerId); // Debugging line
+            return userRepo.findByManagerID(managerId);
         }
-        else {
-            return userRepo.findById(user.getUserID()).map(List::of).orElse(List.of());
-        }
-        // return List.of();
+        return userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
     }
 
     public Optional<User> getUserById(User user, Long id) {
@@ -75,7 +71,7 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
-    public List<User> getUsersByManagerId(Long managerId) {
+    public List<User> getUsersByManagerId(Long managerId, String token) {
         return userRepo.findByManagerID(managerId);
     }
 
@@ -94,22 +90,9 @@ public class UserService {
                     new UsernamePasswordAuthenticationToken(email, password)
             );
             User user = userRepo.findByEmail(email).orElseThrow();
-            return jwtUtil.generateToken(email, user.getRole());
+            return jwtUtil.generateToken(email, user.getRole(), user.getUserID());
         } catch (AuthenticationException e) {
             return "Invalid credentials";
         }
-    }
-
-    public List<User> sahil() {
-        List<User> arr = userRepo.findAll();
-        for(User x : arr) {
-            x.setPassword(passwordEncoder.encode(x.getPassword()));
-            userRepo.save(x);
-        }
-        return userRepo.findAll();
-    }
-
-    public User findByUsername(String username) {
-        return userRepo.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
