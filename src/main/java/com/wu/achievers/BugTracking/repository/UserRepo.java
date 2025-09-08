@@ -16,4 +16,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
     @Query("SELECT A FROM User A INNER JOIN User B ON A.managerID = B.userID WHERE A.managerID = ?1")
     List<User> findByManagerID(Long managerId);
+
+    @Query("SELECT A.userID FROM User A WHERE A.managerID = ?1")
+    List<Long> getIdsByManagerId(Long managerId);
 }

@@ -27,7 +27,6 @@ public class UserController {
 
     @GetMapping("/users")
     public List<User> getAllUsers(@RequestParam(required = false) Long managerId, @RequestHeader("Authorization") String token) {
-        System.out.println("Authorization Header SD: " + token); // Debugging line
         if (managerId == null) {
             return userService.getAllUsers(token);
         }
@@ -35,15 +34,10 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public Optional<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    public Optional<User> getUserById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        return userService.getUserById(id, token);
     }
 
-    @PostMapping("/users")
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
-    }
-    
     @PostMapping("/signup")
     public User signup(@RequestBody User user) {
         return userService.signup(user);
@@ -53,10 +47,10 @@ public class UserController {
     public String login(@RequestBody User user) {
         return userService.login(user.getEmail(), user.getPassword());
     }
-    
+
     @PutMapping("/users")
-    public User updateUser(@RequestBody User user) {
-        return userService.updateUser(user);
+    public User updateUser(@RequestBody User user, @RequestHeader("Authorization") String token) {
+        return userService.updateUser(user, token);
     }
 
     @DeleteMapping("/users/{id}")

@@ -31,27 +31,37 @@ public class UserService {
 
     public List<User> getAllUsers(String token) {
         String role = jwtUtil.extractRole(token);
-        System.out.println("User Role: " + role); // Debugging line
         if ("Admin".equals(role)) {
             return userRepo.findAll();
         } else if ("Manager".equals(role)) {
             Long managerId = jwtUtil.extractUserId(token);
-            System.out.println("Manager ID: " + managerId); // Debugging line
             return userRepo.findByManagerID(managerId);
         }
         return userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepo.findById(id);
+    public Optional<User> getUserById(Long id, String token) {
+        String role = jwtUtil.extractRole(token);
+        Long userId = jwtUtil.extractUserId(token);
+
+        if ("Admin".equals(role) || userId.equals(id)) {
+            return userRepo.findById(id);
+        }
+
+        if ("Manager".equals(role)) {
+            List<Long> arr = userRepo.getIdsByManagerId(userId);
+            for (Long i : arr) {
+                if (i.equals(id)) {
+                    return userRepo.findById(id);
+                }
+            }
+        }
+        return null;
     }
 
-    public User createUser(User user) {
-        return userRepo.save(user);
-    }
-
-    public User updateUser(User user) {
-        if (userRepo.existsById(user.getUserID())) {
+    public User updateUser(User user, String token) {
+        Long userId = jwtUtil.extractUserId(token);
+        if (userId.equals(user.getUserID()) && userRepo.existsById(user.getUserID())) {
             user.setPassword(userRepo.findById(user.getUserID()).get().getPassword());
             return userRepo.save(user);
         }
