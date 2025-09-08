@@ -19,7 +19,7 @@ public class JwtUtil {
         Date expiry = new Date(nowMillis + EXPIRATION_TIME);
         return Jwts.builder()
                 .subject(email)
-                .claim("role", role)
+                .claim("role_sd", role)
                 .claim("userId", userId)
                 .issuedAt(now)
                 .expiration(expiry)
@@ -37,12 +37,14 @@ public class JwtUtil {
     }
 
     public String extractRole(String token) {
-        Claims claims = extractClaims(token);
+        String jwt_token = token.substring(7);
+        Claims claims = extractClaims(jwt_token);
         return claims.get("role", String.class);
     }
 
     public Long extractUserId(String token) {
-        Claims claims = extractClaims(token);
+        String jwt_token = token.substring(7);
+        Claims claims = extractClaims(jwt_token);
         return claims.get("userId", Long.class);
     }
 }
