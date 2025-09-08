@@ -30,11 +30,32 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public List<User> getAllUsers() {
-        return userRepo.findAll();
+    // public List<User> getAllUsers() {
+    //     return userRepo.findAll();
+    // }
+
+    public List<User> getUsersByRole(User user) {
+        if (user.getRole().equals("ADMIN")) {
+            return userRepo.findAll();
+        } else if (user.getRole().equals("Manager")) {
+            return userRepo.findByManagerID(user.getUserID());
+        }
+        else {
+            return userRepo.findById(user.getUserID()).map(List::of).orElse(List.of());
+        }
+        // return List.of();
     }
 
-    public Optional<User> getUserById(Long id) {
+    public Optional<User> getUserById(User user, Long id) {
+        if (user.getRole().equals("Developer") || user.getRole().equals("Tester")) {
+            if(id != user.getUserID()) {
+                //Yahan pe ek exception aana chahiye.
+            }
+            return userRepo.findById(user.getUserID()); 
+        }
+        else if (user.getRole().equals("Manager")) {
+            return userRepo.findUserByManager(user.getUserID(), id);
+        }
         return userRepo.findById(id);
     }
 
@@ -86,5 +107,9 @@ public class UserService {
             userRepo.save(x);
         }
         return userRepo.findAll();
+    }
+
+    public User findByUsername(String username) {
+        return userRepo.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

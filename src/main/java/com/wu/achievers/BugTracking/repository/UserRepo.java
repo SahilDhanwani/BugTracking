@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.wu.achievers.BugTracking.entity.User;
@@ -16,4 +17,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
     @Query("SELECT A FROM User A INNER JOIN User B ON A.managerID = B.userID WHERE A.managerID = ?1")
     List<User> findByManagerID(Long managerId);
+
+    @Query("SELECT u FROM User u WHERE u.managerID = :managerId AND u.userID = :userId")
+    java.util.Optional<User> findUserByManager(@Param("managerId") Long managerId, @Param("userId") Long userId);
 }

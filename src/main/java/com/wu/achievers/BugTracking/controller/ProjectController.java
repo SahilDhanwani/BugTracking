@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wu.achievers.BugTracking.entity.Project;
+import com.wu.achievers.BugTracking.entity.User;
 import com.wu.achievers.BugTracking.service.ProjectService;
+import com.wu.achievers.BugTracking.service.UserService;
 
 @RestController
 @RequestMapping("/api")
@@ -24,13 +27,16 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    @GetMapping("/projects")
-    public List<Project> getAllProjects(@RequestParam(required = false) Long managerId) {
+    @Autowired
+    private UserService userService;
 
-        if (managerId != null) {
-            return projectService.getProjectsByManagerId(managerId);
-        }
-        return projectService.getAllProjects();
+    @GetMapping("/projects")
+    public List<Project> getAllProjects(Authentication authentication) {
+
+        String username = authentication.getName();
+        User currentUser = userService.findByUsername(username);
+
+        return projectService.getProjectsByRole(currentUser);
     }
 
     @GetMapping("/projects/{id}")
