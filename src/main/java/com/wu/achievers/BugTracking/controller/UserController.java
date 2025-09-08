@@ -27,6 +27,7 @@ public class UserController {
 
     @GetMapping("/users")
     public List<User> getAllUsers(@RequestParam(required = false) Long managerId, @RequestHeader("Authorization") String token) {
+        System.out.println("Authorization Header SD: " + token); // Debugging line
         if (managerId == null) {
             return userService.getAllUsers(token);
         }
