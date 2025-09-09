@@ -1,0 +1,18 @@
+;;; 
+Import: Release 10.2.0.1.0 - Beta on Wednesday, 03 September, 2025 23:17:34
+
+Copyright (c) 2003, 2005, Oracle.  All rights reserved.
+;;; 
+Connected to: Oracle Database 10g Express Edition Release 10.2.0.1.0 - Beta
+Master table "SCOTT"."SYS_IMPORT_TABLE_01" successfully loaded/unloaded
+Starting "SCOTT"."SYS_IMPORT_TABLE_01":  scott/********@localhost:1521/XE tables=USERS,PROJECT,BUG directory=dpump_dir dumpfile=mytables.dmp logfile=mytables_imp.log table_exists_action=replace 
+Processing object type TABLE_EXPORT/TABLE/TABLE
+Processing object type TABLE_EXPORT/TABLE/TABLE_DATA
+. . imported "SCOTT"."BUG"                               12.65 KB      50 rows
+. . imported "SCOTT"."PROJECT"                           7.359 KB      25 rows
+. . imported "SCOTT"."USERS"                             10.19 KB      30 rows
+Processing object type TABLE_EXPORT/TABLE/CONSTRAINT/CONSTRAINT
+Processing object type TABLE_EXPORT/TABLE/INDEX/STATISTICS/INDEX_STATISTICS
+Processing object type TABLE_EXPORT/TABLE/CONSTRAINT/REF_CONSTRAINT
+Processing object type TABLE_EXPORT/TABLE/STATISTICS/TABLE_STATISTICS
+Job "SCOTT"."SYS_IMPORT_TABLE_01" successfully completed at 23:17:40

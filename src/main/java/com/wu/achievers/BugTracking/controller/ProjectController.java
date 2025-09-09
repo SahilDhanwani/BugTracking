@@ -1,6 +1,7 @@
 package com.wu.achievers.BugTracking.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wu.achievers.BugTracking.entity.Project;
+import com.wu.achievers.BugTracking.exceptionHandling.NotFoundException;
 import com.wu.achievers.BugTracking.service.ProjectService;
 
 @RestController
@@ -33,10 +35,22 @@ public class ProjectController {
         return projectService.getAllProjects();
     }
 
-    @GetMapping("/projects/{id}")
-    public Project getProjectById(@PathVariable Long id) {
-        return projectService.getProjectById(id);
+    // @GetMapping("/projects/{id}")
+    // public Project getProjectById(@PathVariable Long id) throws NotFoundException{
+
+    //     return projectService.getProjectById(id);
+    // }
+
+  @GetMapping("/projects/{id}")
+public ResponseEntity<Project> getProjectById(@PathVariable Long id) throws NotFoundException {
+    Project project = projectService.getProjectById(id);
+    if (project == null) {
+        throw new NotFoundException("Project with ID " + id + " not found");
     }
+    return ResponseEntity.ok(project);
+}
+
+
 
     @PostMapping("/projects")
     public Project createProject(@RequestBody Project project) {
