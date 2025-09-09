@@ -2,6 +2,7 @@ package com.wu.achievers.BugTracking.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,9 +30,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/login").permitAll()
-                .requestMatchers("/api/users").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
-                .requestMatchers("/api/signup").hasAnyRole("MANAGER", "ADMIN")
-                .anyRequest().hasRole("MANAGER")
+                .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/{id}").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers("/api/signup", "api/users/{id}").hasRole("ADMIN")
+                .anyRequest().hasRole("ADMIN")
         )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

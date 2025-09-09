@@ -19,7 +19,7 @@ public class JwtUtil {
         Date expiry = new Date(nowMillis + EXPIRATION_TIME);
         return Jwts.builder()
                 .subject(email)
-                .claim("role_sd", role)
+                .claim("role", role)
                 .claim("userId", userId)
                 .issuedAt(now)
                 .expiration(expiry)
