@@ -28,6 +28,7 @@ public class UserController {
     @GetMapping("/users")
     public List<User> getAllUsers(@RequestParam(required = false) Long managerId, @RequestHeader("Authorization") String token) {
         if (managerId == null) {
+            // Adding a comment here for Git issues
             return userService.getAllUsers(token);
         }
         return userService.getUsersByManagerId(managerId, token);
