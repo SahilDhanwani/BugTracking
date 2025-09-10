@@ -21,4 +21,6 @@ public interface UserRepo extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.managerID = :managerId AND u.userID = :userId")
     User checkByManagerIdAndUserId(@Param("managerId") Long managerId, @Param("userId") Long userId);
 
+    @Query("SELECT A.userID FROM User A WHERE A.managerID = ?1")
+    List<Long> getIdsByManagerId(Long managerId);
 }
