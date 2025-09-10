@@ -80,7 +80,6 @@ public class UserService {
         return userRepo.findByManagerID(managerId);
     }
 
-
     public User signup(User user) {
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             return null;
@@ -104,10 +103,8 @@ public class UserService {
 
     public boolean checkUserByManagerIdAndUserId(Long managerId, Long userId) {
         User user = userRepo.checkByManagerIdAndUserId(managerId, userId);
-        if(user != null) {
-            return true;
-        }
-        return false;
+        return user != null;
+    }
 
     public Optional<User> findByEmail(String email) {
         return userRepo.findByEmail(email);

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,7 @@ public class BugController {
     private BugService bugService;
 
     @GetMapping("/bugs")
-    public List<Bug> getAllBugs(@RequestParam(required = false) Long projectId, @RequestParam(required = false) String status, @RequestParam(required = false) Long assignedTo, @RequestParam(required = false) String priority, @RequestParam(required = false) Date startDate, @RequestParam(required = false) Date endDate , @RequestHeader("Authorization") String token) {
+    public List<Bug> getAllBugs(@RequestParam(required = false) Long projectId, @RequestParam(required = false) String status, @RequestParam(required = false) Long assignedTo, @RequestParam(required = false) String priority, @RequestParam(required = false) Date startDate, @RequestParam(required = false) Date endDate, @RequestHeader("Authorization") String token) {
         return bugService.getAllBugs(projectId, status, assignedTo, priority, startDate, endDate, token);
     }
 
@@ -35,19 +36,17 @@ public class BugController {
     // public Bug getBugById(@PathVariable Long id) {
     //     return bugService.getBugById(id);
     // }
-
     @GetMapping("/bugs/{id}")
-public ResponseEntity<Bug> getBugById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
-    Bug bug = bugService.getBugById(id, token);
-    if (bug == null) {
-        throw new NotFoundException("Bug with ID " + id + " not found");
+    public ResponseEntity<Bug> getBugById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
+        Bug bug = bugService.getBugById(id, token);
+        if (bug == null) {
+            throw new NotFoundException("Bug with ID " + id + " not found");
+        }
+        return ResponseEntity.ok(bug);
     }
-    return ResponseEntity.ok(bug);
-}
-
 
     @PostMapping("/bugs")
-    public Bug createBug(@RequestBody Bug bug,  @RequestHeader("Authorization") String token) {
+    public Bug createBug(@RequestBody Bug bug, @RequestHeader("Authorization") String token) {
         return bugService.createBug(bug, token);
     }
 
