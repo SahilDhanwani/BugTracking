@@ -42,30 +42,46 @@ public class UserService {
         return userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
     }
 
-    public Optional<User> getUserById(User user, Long id) {
-        if (user.getRole().equals("Developer") || user.getRole().equals("Tester")) {
-            if(id != user.getUserID()) {
+    public Optional<User> getUserById(String token, Long id) {
+        String role = jwtUtil.extractRole(token);
+        Long userId = jwtUtil.extractUserId(token);
+        if (role.equals("Developer") || role.equals("Tester")) {
+            if(id != userId) {
                 //Yahan pe ek exception aana chahiye.
             }
-            return userRepo.findById(user.getUserID()); 
+            return userRepo.findById(userId); 
         }
-        else if (user.getRole().equals("Manager")) {
-            return userRepo.findUserByManager(user.getUserID(), id);
+        else if (role.equals("Manager")) {
+            return userRepo.findUserByManager(userId, id);
         }
         return userRepo.findById(id);
     }
 
-    public User getUserByMID(Long managerId, Long userId) {
-        return userRepo.findUserByManager(managerId, userId).orElseThrow(() -> new RuntimeException("User not found"));
+    public boolean checkUserByManagerID(Long managerId, Long userId) {
+        User user = userRepo.findUserByManager(managerId, userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(user != null) {
+            return true;
+        }
+        return false;
     }
 
     public User createUser(User user) {
         return userRepo.save(user);
     }
 
-    public User updateUser(User user) {
+    public User updateUser(String token, User user) {
+        String role = jwtUtil.extractRole(token);
+        Long userId = jwtUtil.extractUserId(token);
+        User currentUser = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
         if (userRepo.existsById(user.getUserID())) {
-            user.setPassword(userRepo.findById(user.getUserID()).get().getPassword());
+            if(role.equals("Developer") || role.equals("Tester")) {
+                if (!currentUser.getRole().equals(user.getRole()) || !currentUser.getUserID().equals(user.getUserID()) || !currentUser.getManagerID().equals(user.getManagerID())) {
+                    //Yahan pe ek exception
+                }
+            }
+
+            //user.setPassword(userRepo.findById(user.getUserID()).get().getPassword());
             return userRepo.save(user);
         }
         return null;

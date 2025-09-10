@@ -18,18 +18,31 @@ public class ProjectService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UserService userService;
+
     public List<Project> getAllProjects() {
         return projectRepo.findAll();
     }
 
     public Project getProjectById(String token, long id) {
         String role = jwtUtil.extractRole(token);
-
+        Project p = projectRepo.findById(id).orElseThrow(() -> new RuntimeException("Project not found"));
+        if (p == null) {
+            //Project doesn't exists
+        }
         if(role.equals("Developer") || role.equals("Tester")) {
-            Project p = projectRepo.findForUsers(jwtUtil.extractUserId(token), id);
+            boolean userExists =  userService.checkUserByManagerID(p.getManagerID(), jwtUtil.extractUserId(token));
+            if(!userExists) {
+                //User not accessible exception
+            }
         }
         else if(role.equals("Manager")) {
-            Project p = projectRepo.findByManagerId(jwtUtil.extractUserId(token), id);
+            
+            if(p.getManagerID() != jwtUtil.extractUserId(token)) {
+                //Access exception
+                return null;
+            }
         }
         return projectRepo.findById(id).orElse(null);
     }
@@ -38,8 +51,13 @@ public class ProjectService {
         return projectRepo.save(project);
     }
 
-    public Project updateProject(Project project) {
+    public Project updateProject(String token, Project project) {
         if (projectRepo.existsById(project.getProjectID())) {
+            Project currentProject = projectRepo.findById(project.getProjectID()).orElseThrow(() -> new RuntimeException("Project not found"));
+            if(currentProject.getManagerID() != project.getManagerID() && jwtUtil.extractRole(token).equals("Manager")) {
+                //Cannot change the manager exception
+                return null;
+            }
             return projectRepo.save(project);
         }
         return null;
@@ -59,16 +77,18 @@ public class ProjectService {
     }
 
     public List<Project> getProjectsByRole(String token) {
-        // TODO Auto-generated method stub
         String role = jwtUtil.extractRole(token);
+        
         if(role.equals("Admin")) {
             return projectRepo.findAll();
         }
-        // else if(role.equals("Manager") || role.equals("Developer") || role.equals("Tester")) {
-        //     return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
-        // }
+        else if(role.equals("Manager")) {
+            return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
+        }
+
+        Long managerId = userService.getUserById(token, jwtUtil.extractUserId(token)).orElseThrow().getManagerID();
         
-        return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
+        return projectRepo.findByManagerId(managerId);
     }
 
 }

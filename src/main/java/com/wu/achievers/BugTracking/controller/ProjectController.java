@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,13 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wu.achievers.BugTracking.entity.Project;
-import com.wu.achievers.BugTracking.entity.User;
 import com.wu.achievers.BugTracking.service.ProjectService;
-import com.wu.achievers.BugTracking.service.UserService;
 
 @RestController
 @RequestMapping("/api")
@@ -44,8 +40,8 @@ public class ProjectController {
     }
 
     @PutMapping("/projects")
-    public Project updateProject(@RequestBody Project project) {
-        return projectService.updateProject(project);
+    public Project updateProject(@RequestHeader("Authorization") String token, @RequestBody Project project) {
+        return projectService.updateProject(token, project);
     }
 
     @DeleteMapping("/projects/{id}")

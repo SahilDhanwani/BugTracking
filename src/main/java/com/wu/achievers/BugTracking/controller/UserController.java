@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,11 +39,9 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public Optional<User> getUserById(Authentication authentication, @PathVariable Long id) {
-        String username = authentication.getName();
-        User currentUser = userService.findByUsername(username);
+    public Optional<User> getUserById(String token, @PathVariable Long id) {
 
-        return userService.getUserById(currentUser, id);
+        return userService.getUserById(token, id);
     }
 
     @PostMapping("/users")
@@ -78,18 +75,9 @@ public class UserController {
     }
     
     @PutMapping("/users")
-    public User updateUser(Authentication authentication, @RequestBody User user) {
-        String username = authentication.getName();
-        User currentUser = userService.findByUsername(username);
+    public User updateUser(String token, @RequestBody User user) {
 
-        if(currentUser.getRole().equals("Developer") || currentUser.getRole().equals("Tester")) {
-            if (!currentUser.getRole().equals(user.getRole()) || !currentUser.getUserID().equals(user.getUserID()) || !currentUser.getManagerID().equals(user.getManagerID())) {
-                //Yahan pe ek exception
-            }
-            return userService.updateUser(user);
-        }
-
-        return userService.updateUser(user);
+        return userService.updateUser(token, user);
     }
 
     @DeleteMapping("/users/{id}")
