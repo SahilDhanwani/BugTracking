@@ -30,6 +30,10 @@ public class UserService {
     private JwtUtil jwtUtil;
 
     public List<User> getAllUsers(String token) {
+        String pass = passwordEncoder.encode("admin");
+        System.out.println("==============================");
+        System.out.println(pass);
+        System.out.println("==============================");
         String role = jwtUtil.extractRole(token);
         System.out.println("User Role: " + role); // Debugging line
         if ("Admin".equals(role)) {
@@ -66,6 +70,7 @@ public class UserService {
         return userRepo.findByManagerID(managerId);
     }
 
+
     public User signup(User user) {
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             return null;
@@ -85,5 +90,13 @@ public class UserService {
         } catch (AuthenticationException e) {
             return "Invalid credentials";
         }
+    }
+
+    public boolean checkUserByManagerIdAndUserId(Long managerId, Long userId) {
+        User user = userRepo.checkByManagerIdAndUserId(managerId, userId);
+        if(user != null) {
+            return true;
+        }
+        return false;
     }
 }
