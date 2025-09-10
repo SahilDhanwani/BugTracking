@@ -27,6 +27,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
+    // Paths to skip JWT authentication (Swagger/OpenAPI endpoints)
+    private static final String[] AUTH_WHITELIST = {
+        "/swagger-ui/**",
+        "/v3/api-docs/**",
+        "/webjars/**",
+        "/swagger-resources/**",
+        "/index.html"
+    };
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -34,6 +42,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         String email = null;
         String jwt = null;
+
+        String path = request.getRequestURI();
+        for (String allowed : AUTH_WHITELIST) {
+            if (path.equals(allowed) || path.startsWith(allowed.replace("/**", ""))) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
