@@ -2,6 +2,7 @@ package com.wu.achievers.BugTracking.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,21 +25,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // http
-        //         .csrf(csrf -> csrf.disable())
-        //         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        //         .authorizeHttpRequests(auth -> auth
-        //         .requestMatchers("/api/login", "/api/signup", "/api/users", "/api/sahil").permitAll()
-        //         .anyRequest().hasRole("MANAGER")
-        // )
-        //         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
-         http
+        http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-    .anyRequest().permitAll()
-
+                .requestMatchers("/api/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/{id}").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers("/api/signup", "api/users/{id}").hasRole("ADMIN")
+                .anyRequest().hasRole("ADMIN")
         )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

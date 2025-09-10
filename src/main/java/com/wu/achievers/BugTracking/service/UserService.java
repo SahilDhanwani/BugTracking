@@ -29,20 +29,39 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public List<User> getAllUsers() {
-        return userRepo.findAll();
+    public List<User> getAllUsers(String token) {
+        String role = jwtUtil.extractRole(token);
+        if ("Admin".equals(role)) {
+            return userRepo.findAll();
+        } else if ("Manager".equals(role)) {
+            Long managerId = jwtUtil.extractUserId(token);
+            return userRepo.findByManagerID(managerId);
+        }
+        return userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepo.findById(id);
+    public Optional<User> getUserById(Long id, String token) {
+        String role = jwtUtil.extractRole(token);
+        Long userId = jwtUtil.extractUserId(token);
+
+        if ("Admin".equals(role) || userId.equals(id)) {
+            return userRepo.findById(id);
+        }
+
+        if ("Manager".equals(role)) {
+            List<Long> arr = userRepo.getIdsByManagerId(userId);
+            for (Long i : arr) {
+                if (i.equals(id)) {
+                    return userRepo.findById(id);
+                }
+            }
+        }
+        return null;
     }
 
-    public User createUser(User user) {
-        return userRepo.save(user);
-    }
-
-    public User updateUser(User user) {
-        if (userRepo.existsById(user.getUserID())) {
+    public User updateUser(User user, String token) {
+        Long userId = jwtUtil.extractUserId(token);
+        if (userId.equals(user.getUserID()) && userRepo.existsById(user.getUserID())) {
             user.setPassword(userRepo.findById(user.getUserID()).get().getPassword());
             return userRepo.save(user);
         }
@@ -53,7 +72,7 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
-    public List<User> getUsersByManagerId(Long managerId) {
+    public List<User> getUsersByManagerId(Long managerId, String token) {
         return userRepo.findByManagerID(managerId);
     }
 
@@ -72,23 +91,13 @@ public class UserService {
                     new UsernamePasswordAuthenticationToken(email, password)
             );
             User user = userRepo.findByEmail(email).orElseThrow();
-            return jwtUtil.generateToken(email, user.getRole());
+            return jwtUtil.generateToken(email, user.getRole(), user.getUserID());
         } catch (AuthenticationException e) {
             return "Invalid credentials";
         }
     }
 
     public Optional<User> findByEmail(String email) {
-    return userRepo.findByEmail(email);
-}
-
-
-    public List<User> sahil() {
-        List<User> arr = userRepo.findAll();
-        for(User x : arr) {
-            x.setPassword(passwordEncoder.encode(x.getPassword()));
-            userRepo.save(x);
-        }
-        return userRepo.findAll();
+        return userRepo.findByEmail(email);
     }
 }
