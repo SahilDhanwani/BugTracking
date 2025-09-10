@@ -23,16 +23,9 @@ public class BugService {
     @Autowired
     private UserService userServcie;
 
-    public List<Bug> getAllBugs(Long projectId, String status, Long assigneeId, String priority, Date startDate, Date endDate, String token) {
-        String role = jwtUtil.extractRole(token);
-        Long userId = jwtUtil.extractUserId(token);
-        if ("Admin".equals(role)) {
-            return bugRepo.findAll();
-        } else if("Manager".equals(role)) {
-            return bugRepo.findByProjectManagerId(userId);
-        } 
-        return bugRepo.findByAssigneeId(userId);
-          //  return bugRepo.searchBugs(projectId, status, assigneeId, priority, startDate, endDate);
+    public List<Bug> getAllBugs(Long projectId, String status, Long assignedTo, String priority, Date startDate, Date endDate) {
+       
+         return bugRepo.searchBugs(projectId, status, assignedTo, priority, startDate, endDate);
     }
 
     public Bug getBugById(Long id, String token) {

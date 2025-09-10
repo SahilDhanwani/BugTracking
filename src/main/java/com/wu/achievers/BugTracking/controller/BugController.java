@@ -28,8 +28,8 @@ public class BugController {
     private BugService bugService;
 
     @GetMapping("/bugs")
-    public List<Bug> getAllBugs(@RequestParam(required = false) Long projectId, @RequestParam(required = false) String status, @RequestParam(required = false) Long assignedTo, @RequestParam(required = false) String priority, @RequestParam(required = false) Date startDate, @RequestParam(required = false) Date endDate, @RequestHeader("Authorization") String token) {
-        return bugService.getAllBugs(projectId, status, assignedTo, priority, startDate, endDate, token);
+    public List<Bug> getAllBugs(@RequestParam(required = false) Long projectId, @RequestParam(required = false) String status, @RequestParam(required = false) Long assignedTo, @RequestParam(required = false) String priority, @RequestParam(required = false) Date startDate, @RequestParam(required = false) Date endDate) {
+        return bugService.getAllBugs(projectId, status, assignedTo, priority, startDate, endDate);
     }
 
     // @GetMapping("/bugs/{id}")
