@@ -30,14 +30,22 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/login").permitAll()
+                .requestMatchers(
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs.yaml",
+                        "/webjars/**"
+                ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/{id}").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers("/api/signup", "api/users/{id}").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT,"/api/bugs").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers(HttpMethod.POST, "/api/bugs").hasAnyRole("MANAGER", "ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET,  "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers(HttpMethod.GET,  "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER"
                 .anyRequest().hasRole("ADMIN")
-        )
+                )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
