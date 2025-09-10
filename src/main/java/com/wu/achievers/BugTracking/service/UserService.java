@@ -55,6 +55,10 @@ public class UserService {
         return userRepo.findById(id);
     }
 
+    public User getUserByMID(Long managerId, Long userId) {
+        return userRepo.findUserByManager(managerId, userId).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     public User createUser(User user) {
         return userRepo.save(user);
     }

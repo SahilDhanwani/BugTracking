@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,21 +28,14 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    @Autowired
-    private UserService userService;
-
     @GetMapping("/projects")
-    public List<Project> getAllProjects(Authentication authentication) {
-
-        String username = authentication.getName();
-        User currentUser = userService.findByUsername(username);
-
-        return projectService.getProjectsByRole(currentUser);
+    public List<Project> getAllProjects(@RequestHeader("Authorization") String token) {
+        return projectService.getProjectsByRole(token);
     }
 
     @GetMapping("/projects/{id}")
-    public Project getProjectById(@PathVariable Long id) {
-        return projectService.getProjectById(id);
+    public Project getProjectById(@RequestHeader("Authorization") String token,@PathVariable Long id) {
+        return projectService.getProjectById(token, id);
     }
 
     @PostMapping("/projects")

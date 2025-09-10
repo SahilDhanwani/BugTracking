@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.Project;
-import com.wu.achievers.BugTracking.entity.User;
 import com.wu.achievers.BugTracking.repository.ProjectRepo;
+import com.wu.achievers.BugTracking.util.JwtUtil;
 
 @Service
 public class ProjectService {
@@ -15,11 +15,22 @@ public class ProjectService {
     @Autowired
     private ProjectRepo projectRepo;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     public List<Project> getAllProjects() {
         return projectRepo.findAll();
     }
 
-    public Project getProjectById(Long id) {
+    public Project getProjectById(String token, long id) {
+        String role = jwtUtil.extractRole(token);
+
+        if(role.equals("Developer") || role.equals("Tester")) {
+            Project p = projectRepo.findForUsers(jwtUtil.extractUserId(token), id);
+        }
+        else if(role.equals("Manager")) {
+            Project p = projectRepo.findByManagerId(jwtUtil.extractUserId(token), id);
+        }
         return projectRepo.findById(id).orElse(null);
     }
 
@@ -47,15 +58,17 @@ public class ProjectService {
         return projectRepo.findByManagerId(managerId);
     }
 
-    public List<Project> getProjectsByRole(User user) {
+    public List<Project> getProjectsByRole(String token) {
         // TODO Auto-generated method stub
-        if(user.getRole().equals("Admin")) {
+        String role = jwtUtil.extractRole(token);
+        if(role.equals("Admin")) {
             return projectRepo.findAll();
         }
-        else if(user.getRole().equals("Manager") || user.getRole().equals("Developer") || user.getRole().equals("Tester")) {
-            return projectRepo.findByManagerId(user.getUserID());
-        }
-        return List.of();
+        // else if(role.equals("Manager") || role.equals("Developer") || role.equals("Tester")) {
+        //     return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
+        // }
+        
+        return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
     }
 
 }
