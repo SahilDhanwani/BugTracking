@@ -13,4 +13,5 @@ public interface ProjectRepo extends JpaRepository<Project, Long> {
 
     @Query("SELECT p FROM Project p WHERE p.managerID=?1")
     List<Project> findByManagerId(Long managerId);
+
 }

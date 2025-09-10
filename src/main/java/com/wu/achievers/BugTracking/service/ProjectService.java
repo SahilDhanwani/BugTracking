@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.Project;
 import com.wu.achievers.BugTracking.repository.ProjectRepo;
+import com.wu.achievers.BugTracking.util.JwtUtil;
 
 @Service
 public class ProjectService {
@@ -14,11 +15,35 @@ public class ProjectService {
     @Autowired
     private ProjectRepo projectRepo;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
+
     public List<Project> getAllProjects() {
         return projectRepo.findAll();
     }
 
-    public Project getProjectById(Long id) {
+    public Project getProjectById(String token, long id) {
+        String role = jwtUtil.extractRole(token);
+        Project p = projectRepo.findById(id).orElseThrow(() -> new RuntimeException("Project not found"));
+        if (p == null) {
+            //Project doesn't exists
+        }
+        if(role.equals("Developer") || role.equals("Tester")) {
+            boolean userExists =  userService.checkUserByManagerID(p.getManagerID(), jwtUtil.extractUserId(token));
+            if(!userExists) {
+                //User not accessible exception
+            }
+        }
+        else if(role.equals("Manager")) {
+            
+            if(p.getManagerID() != jwtUtil.extractUserId(token)) {
+                //Access exception
+                return null;
+            }
+        }
         return projectRepo.findById(id).orElse(null);
     }
 
@@ -26,8 +51,13 @@ public class ProjectService {
         return projectRepo.save(project);
     }
 
-    public Project updateProject(Project project) {
+    public Project updateProject(String token, Project project) {
         if (projectRepo.existsById(project.getProjectID())) {
+            Project currentProject = projectRepo.findById(project.getProjectID()).orElseThrow(() -> new RuntimeException("Project not found"));
+            if(currentProject.getManagerID() != project.getManagerID() && jwtUtil.extractRole(token).equals("Manager")) {
+                //Cannot change the manager exception
+                return null;
+            }
             return projectRepo.save(project);
         }
         return null;
@@ -43,6 +73,21 @@ public class ProjectService {
 
     public List<Project> getProjectsByManagerId(Long managerId) {
 
+        return projectRepo.findByManagerId(managerId);
+    }
+
+    public List<Project> getProjectsByRole(String token) {
+        String role = jwtUtil.extractRole(token);
+        
+        if(role.equals("Admin")) {
+            return projectRepo.findAll();
+        }
+        else if(role.equals("Manager")) {
+            return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
+        }
+
+        Long managerId = userService.getUserById(token, jwtUtil.extractUserId(token)).orElseThrow().getManagerID();
+        
         return projectRepo.findByManagerId(managerId);
     }
 

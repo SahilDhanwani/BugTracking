@@ -44,6 +44,7 @@ public class UserService {
         return userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
     }
 
+<<<<<<< HEAD
     public Optional<User> getUserById(Long id, String token) {
         String role = jwtUtil.extractRole(token);
         Long userId = jwtUtil.extractUserId(token);
@@ -67,10 +68,19 @@ public class UserService {
         Long userId = jwtUtil.extractUserId(token);
         if (userId.equals(user.getUserID()) && userRepo.existsById(user.getUserID())) {
             user.setPassword(userRepo.findById(user.getUserID()).get().getPassword());
-            return userRepo.save(user);
         }
-        return null;
+    }    return userRepo.save(user);
     }
+
+
+    public boolean checkUserByManagerID(Long managerId, Long userId) {
+        User user = userRepo.findUserByManager(managerId, userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(user != null) {
+            return true;
+        }
+        return false;
+    }
+
 
     public void deleteUser(Long id) {
         userRepo.deleteById(id);

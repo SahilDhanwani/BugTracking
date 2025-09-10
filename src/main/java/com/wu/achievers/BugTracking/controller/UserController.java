@@ -16,11 +16,15 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.AuthenticationException;
 
 import com.wu.achievers.BugTracking.entity.User;
 import com.wu.achievers.BugTracking.exceptionHandling.BadRequestException;
 import com.wu.achievers.BugTracking.exceptionHandling.NotFoundException;
 import com.wu.achievers.BugTracking.service.UserService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api")
@@ -69,8 +73,23 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        return userService.login(user.getEmail(), user.getPassword());
+    public String login(@RequestBody User user, HttpServletResponse response) {
+        try {
+            String jwt = userService.login(user.getEmail(), user.getPassword());
+            Cookie cookie = new Cookie("JWT", jwt);
+            cookie.setHttpOnly(true);  // Make sure the cookie is not accessible from JavaScript
+            cookie.setSecure(true);    // Make sure the cookie is sent only over HTTPS (optional, but recommended)
+            cookie.setPath("/");       // Set the path for the cookie
+            cookie.setMaxAge(3600);
+
+            response.addCookie(cookie);
+
+            return "Login successful " + jwt;
+        }
+        catch (AuthenticationException e) {
+            return "Invalid Credentials";
+        }
+        
     }
 
     @PutMapping("/users")

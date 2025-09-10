@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wu.achievers.BugTracking.entity.Project;
@@ -26,44 +26,46 @@ public class ProjectController {
     private ProjectService projectService;
 
     @GetMapping("/projects")
-    public List<Project> getAllProjects(@RequestParam(required = false) Long managerId) {
-
-        if (managerId != null) {
-            return projectService.getProjectsByManagerId(managerId);
-        }
-        return projectService.getAllProjects();
+    public List<Project> getAllProjects(@RequestHeader("Authorization") String token) {
+        return projectService.getProjectsByRole(token);
     }
 
     // @GetMapping("/projects/{id}")
     // public Project getProjectById(@PathVariable Long id) throws NotFoundException{
-
     //     return projectService.getProjectById(id);
     // }
-
-  @GetMapping("/projects/{id}")
-public ResponseEntity<Project> getProjectById(@PathVariable Long id) throws NotFoundException {
-    Project project = projectService.getProjectById(id);
-    if (project == null) {
-        throw new NotFoundException("Project with ID " + id + " not found");
+    @GetMapping("/projects/{id}")
+    public ResponseEntity<Project> getProjectById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
+        Project project = projectService.getProjectById(id, token);
+        if (project == null) {
+            throw new NotFoundException("Project with ID " + id + " not found");
+        }
+        return ResponseEntity.ok(project);
     }
-    return ResponseEntity.ok(project);
-}
 
 
-
-    @PostMapping("/projects")
+            
+            @PostMapping("/projects")
+            
+            
+                
+            
     public Project createProject(@RequestBody Project project) {
-        return projectService.createProject(project);
+                return projectService.createProject(project);
     }
-
-    @PutMapping("/projects")
-    public Project updateProject(@RequestBody Project project) {
-        return projectService.updateProject(project);
-    }
-
-    @DeleteMapping("/projects/{id}")
+            
+            @PutMapping("/projects")
+            
+            
+                
+            
+    public Project updateProject(@RequestHeader("Authorization") String token, @RequestBody Project project) {
+                    rn projectService.updateProject(token, project);
+                
+                
+            @DeleteMapping("/projects/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-        if (projectService.deleteProject(id)) {
+                if (projectService.deleteProject(id)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
