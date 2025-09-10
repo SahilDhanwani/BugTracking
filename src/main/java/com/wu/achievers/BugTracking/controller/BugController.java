@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wu.achievers.BugTracking.entity.Bug;
+import com.wu.achievers.BugTracking.exceptionHandling.NotFoundException;
 import com.wu.achievers.BugTracking.service.BugService;
 
 @RestController
@@ -30,11 +31,20 @@ public class BugController {
         return bugService.getAllBugs(projectId, status, assignedTo, priority, startDate, endDate, token);
     }
 
+    // @GetMapping("/bugs/{id}")
+    // public Bug getBugById(@PathVariable Long id) {
+    //     return bugService.getBugById(id);
+    // }
+
     @GetMapping("/bugs/{id}")
-    public Bug getBugById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        
-        return (bugService.getBugById(id, token));
+public ResponseEntity<Bug> getBugById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
+    Bug bug = bugService.getBugById(id, token);
+    if (bug == null) {
+        throw new NotFoundException("Bug with ID " + id + " not found");
     }
+    return ResponseEntity.ok(bug);
+}
+
 
     @PostMapping("/bugs")
     public Bug createBug(@RequestBody Bug bug,  @RequestHeader("Authorization") String token) {
