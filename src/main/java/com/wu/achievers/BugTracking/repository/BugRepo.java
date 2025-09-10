@@ -21,4 +21,9 @@ public interface BugRepo extends JpaRepository<Bug, Long> {
             @Param("startDate") Date startDate,
             @Param("endDate") Date endDate);
 
+    @Query("SELECT b FROM Bug b WHERE b.assignedTo = ?1")
+    List<Bug> findByAssigneeId(Long assignedTo);
+
+    @Query("SELECT b FROM Bug b WHERE b.projectID IN (SELECT p.projectID FROM Project p WHERE p.managerID = ?1)")
+    List<Bug> findByProjectManagerId(Long managerId);
 }
