@@ -96,4 +96,8 @@ public class UserService {
             return "Invalid credentials";
         }
     }
+
+    public Optional<User> findByEmail(String email) {
+        return userRepo.findByEmail(email);
+    }
 }

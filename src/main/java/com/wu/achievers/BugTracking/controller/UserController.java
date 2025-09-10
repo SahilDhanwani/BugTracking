@@ -40,61 +40,40 @@ public class UserController {
 
     // @GetMapping("/users/{id}")
     // public Optional<User> getUserById(@PathVariable Long id) throws NotFoundException {
-        
     //     return userService.getUserById(id);
     // }
-        @GetMapping("/users/{id}")
-    public Optional<User> getUserById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
 
-    Optional<User> user = userService.getUserById(id, token);
-    if (user.isPresent()) {
-        return ResponseEntity.ok(user.get());
-    } else {
-        throw new NotFoundException("User with ID " + id + " not found");
+        Optional<User> user = userService.getUserById(id, token);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            throw new NotFoundException("User with ID " + id + " not found");
+        }
     }
-}
-
 
     // @PostMapping("/users")
     // public User createUser(@RequestBody User user) {
     //     return userService.createUser(user);
     // }
-
-@PostMapping("/users")
-public ResponseEntity<User> createUser(@RequestBody User user) {
-    Optional<User> existingUser = userService.findByEmail(user.getEmail());
-    if (existingUser.isPresent()) {
-        throw new BadRequestException("Email " + user.getEmail() + " is already in use");
-    }
-    
-    User createdUser = userService.createUser(user);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-}
-
-    
-    // @PostMapping("/signup")
-    // public User signup(@RequestBody User user) {
-    //     return userService.signup(user);
-    // }
-
     @PostMapping("/signup")
-public ResponseEntity<User> signup(@RequestBody User user) {
-    Optional<User> existingUser = userService.findByEmail(user.getEmail());
-    if (existingUser.isPresent()) {
-        throw new BadRequestException("Email " + user.getEmail() + " is already in use");
+    public ResponseEntity<User> signup(@RequestBody User user) {
+        Optional<User> existingUser = userService.findByEmail(user.getEmail());
+        if (existingUser.isPresent()) {
+            throw new BadRequestException("Email " + user.getEmail() + " is already in use");
+        }
+
+        User createdUser = userService.signup(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
-
-    User createdUser = userService.signup(user);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-}
-
 
     @PostMapping("/login")
     public String login(@RequestBody User user) {
         return userService.login(user.getEmail(), user.getPassword());
     }
-    
-@PutMapping("/users")
+
+    @PutMapping("/users")
     public User updateUser(@RequestBody User user, @RequestHeader("Authorization") String token) {
         return userService.updateUser(user, token);
     }
