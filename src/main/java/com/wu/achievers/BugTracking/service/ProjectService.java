@@ -31,7 +31,7 @@ public class ProjectService {
         if (p == null) {
             //Project doesn't exists
         }
-        if(role.equals("Developer") || role.equals("Tester")) {
+        else if(role.equals("Developer") || role.equals("Tester")) {
             boolean userExists =  userService.checkUserByManagerID(p.getManagerID(), jwtUtil.extractUserId(token));
             if(!userExists) {
                 //User not accessible exception
@@ -39,7 +39,7 @@ public class ProjectService {
         }
         else if(role.equals("Manager")) {
             
-            if(p.getManagerID() != jwtUtil.extractUserId(token)) {
+            if(!p.getManagerID().equals(jwtUtil.extractUserId(token))) {
                 //Access exception
                 return null;
             }
@@ -54,7 +54,7 @@ public class ProjectService {
     public Project updateProject(String token, Project project) {
         if (projectRepo.existsById(project.getProjectID())) {
             Project currentProject = projectRepo.findById(project.getProjectID()).orElseThrow(() -> new RuntimeException("Project not found"));
-            if(currentProject.getManagerID() != project.getManagerID() && jwtUtil.extractRole(token).equals("Manager")) {
+            if(!currentProject.getManagerID().equals(project.getManagerID()) && jwtUtil.extractRole(token).equals("Manager")) {
                 //Cannot change the manager exception
                 return null;
             }
@@ -86,7 +86,7 @@ public class ProjectService {
             return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
         }
 
-        Long managerId = userService.getUserById(token, jwtUtil.extractUserId(token)).orElseThrow().getManagerID();
+        Long managerId = userService.getUserById(jwtUtil.extractUserId(token), token).orElseThrow().getManagerID();
         
         return projectRepo.findByManagerId(managerId);
     }

@@ -36,36 +36,27 @@ public class ProjectController {
     // }
     @GetMapping("/projects/{id}")
     public ResponseEntity<Project> getProjectById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
-        Project project = projectService.getProjectById(id, token);
+        Project project = projectService.getProjectById(token, id);
         if (project == null) {
             throw new NotFoundException("Project with ID " + id + " not found");
         }
         return ResponseEntity.ok(project);
     }
 
+    @PostMapping("/projects")
 
-            
-            @PostMapping("/projects")
-            
-            
-                
-            
     public Project createProject(@RequestBody Project project) {
-                return projectService.createProject(project);
+        return projectService.createProject(project);
     }
-            
-            @PutMapping("/projects")
-            
-            
-                
-            
+
+    @PutMapping("/projects")
     public Project updateProject(@RequestHeader("Authorization") String token, @RequestBody Project project) {
-                    rn projectService.updateProject(token, project);
-                
-                
-            @DeleteMapping("/projects/{id}")
+        return projectService.updateProject(token, project);
+    }
+
+    @DeleteMapping("/projects/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-                if (projectService.deleteProject(id)) {
+        if (projectService.deleteProject(id)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();

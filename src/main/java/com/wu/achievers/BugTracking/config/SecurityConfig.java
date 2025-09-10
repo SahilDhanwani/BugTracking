@@ -40,12 +40,10 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/{id}").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers("/api/signup", "api/users/{id}").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT,"/api/bugs").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers(HttpMethod.PUT, "/api/bugs").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers(HttpMethod.POST, "/api/bugs").hasAnyRole("MANAGER", "ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET,  "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER"
-                .anyRequest().hasRole("ADMIN")
-                )
+                .requestMatchers(HttpMethod.GET, "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers("/api/users/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers(HttpMethod.GET, "/api/projects/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers(HttpMethod.GET, "/api/projects").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
@@ -53,8 +51,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/projects").hasAnyRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasAnyRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
-                .anyRequest().hasRole("MANAGER")
-        )
+                .anyRequest().hasRole("ADMIN")
+                )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

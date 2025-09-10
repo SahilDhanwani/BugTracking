@@ -85,11 +85,10 @@ public class UserController {
             response.addCookie(cookie);
 
             return "Login successful " + jwt;
-        }
-        catch (AuthenticationException e) {
+        } catch (AuthenticationException e) {
             return "Invalid Credentials";
         }
-        
+
     }
 
     @PutMapping("/users")
