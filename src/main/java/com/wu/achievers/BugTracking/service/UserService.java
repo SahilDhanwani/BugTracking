@@ -30,10 +30,6 @@ public class UserService {
     private JwtUtil jwtUtil;
 
     public List<User> getAllUsers(String token) {
-        String pass = passwordEncoder.encode("admin");
-        System.out.println("==============================");
-        System.out.println(pass);
-        System.out.println("==============================");
         String role = jwtUtil.extractRole(token);
         if ("Admin".equals(role)) {
             return userRepo.findAll();
@@ -77,10 +73,12 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
+        // AddException
         userRepo.deleteById(id);
     }
 
     public List<User> getUsersByManagerId(Long managerId, String token) {
+        // AddException: Agar ye function ne kuch return nahi kiya toh, Write ki no such manager exists
         return userRepo.findByManagerID(managerId);
     }
 

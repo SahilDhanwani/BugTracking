@@ -36,16 +36,11 @@ public class UserController {
     @GetMapping("/users")
     public List<User> getAllUsers(@RequestParam(required = false) Long managerId, @RequestHeader("Authorization") String token) {
         if (managerId == null) {
-            // Adding a comment here for Git issues
             return userService.getAllUsers(token);
         }
         return userService.getUsersByManagerId(managerId, token);
     }
 
-    // @GetMapping("/users/{id}")
-    // public Optional<User> getUserById(@PathVariable Long id) throws NotFoundException {
-    //     return userService.getUserById(id);
-    // }
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
 
@@ -57,10 +52,6 @@ public class UserController {
         }
     }
 
-    // @PostMapping("/users")
-    // public User createUser(@RequestBody User user) {
-    //     return userService.createUser(user);
-    // }
     @PostMapping("/signup")
     public ResponseEntity<User> signup(@RequestBody User user) {
         Optional<User> existingUser = userService.findByEmail(user.getEmail());
@@ -77,9 +68,9 @@ public class UserController {
         try {
             String jwt = userService.login(user.getEmail(), user.getPassword());
             Cookie cookie = new Cookie("JWT", jwt);
-            cookie.setHttpOnly(true);  // Make sure the cookie is not accessible from JavaScript
-            cookie.setSecure(true);    // Make sure the cookie is sent only over HTTPS (optional, but recommended)
-            cookie.setPath("/");       // Set the path for the cookie
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
             cookie.setMaxAge(3600);
 
             response.addCookie(cookie);
