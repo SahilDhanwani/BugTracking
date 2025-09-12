@@ -26,13 +26,13 @@ public class ProjectController {
     private ProjectService projectService;
 
     @GetMapping("/projects")
-    public List<Project> getAllProjects(@RequestHeader("Authorization") String token) {
-        return projectService.getProjectsByRole(token);
+    public List<Project> fetchAllProjects(@RequestHeader("Authorization") String token) {
+        return projectService.fetchAllProjects(token);
     }
 
     @GetMapping("/projects/{id}")
-    public ResponseEntity<Project> getProjectById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
-        Project project = projectService.getProjectById(token, id);
+    public ResponseEntity<Project> fetchProjectById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
+        Project project = projectService.fetchProjectById(token, id);
         if (project == null) {
             throw new NotFoundException("Project with ID " + id + " not found");
         }
@@ -52,9 +52,8 @@ public class ProjectController {
     }
 
     @DeleteMapping("/projects/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        
-        projectService.deleteProject(id, token);
+    public ResponseEntity<Void> removeProject(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        projectService.removeProject(id, token);
         return ResponseEntity.ok().build();
     }
 

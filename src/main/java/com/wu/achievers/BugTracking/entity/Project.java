@@ -17,10 +17,10 @@ public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "project_seq")
     @Column(name = "ProjectID")
-    private Long projectID;
+    private Long projectId;
 
     @Column(name = "ManagerID", nullable = false)
-    private Long managerID;
+    private Long managerId;
 
     @Column(name = "ProjectName", length = 100, nullable = false)
     private String projectName;
@@ -31,34 +31,34 @@ public class Project {
     public Project() {
     }
 
-    public Project(Long managerID, String projectName, String projectDescription) {
-        this.managerID = managerID;
+    public Project(Long managerId, String projectName, String projectDescription) {
+        this.managerId = managerId;
         this.projectName = projectName;
         this.projectDescription = projectDescription;
     }
 
-    public Project(Long projectID, Long managerID, String projectName, String projectDescription) {
-        this.projectID = projectID;
-        this.managerID = managerID;
+    public Project(Long projectId, Long managerId, String projectName, String projectDescription) {
+        this.projectId = projectId;
+        this.managerId = managerId;
         this.projectName = projectName;
         this.projectDescription = projectDescription;
     }
 
     // Getters and setters
-    public Long getProjectID() {
-        return projectID;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setProjectID(Long projectID) {
-        this.projectID = projectID;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
-    public Long getManagerID() {
-        return managerID;
+    public Long getManagerId() {
+        return managerId;
     }
 
-    public void setManagerID(Long managerID) {
-        this.managerID = managerID;
+    public void setManagerId(Long managerId) {
+        this.managerId = managerId;
     }
 
     public String getProjectName() {

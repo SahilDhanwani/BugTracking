@@ -7,14 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,57 +22,55 @@ class ProjectServiceTest {
     @Mock
     private JwtUtil jwtUtil;
     @Mock
-    private UserService userService;
+    // Removed unused userService variable
     @InjectMocks
     private ProjectService projectService;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    // Removed unused setUp method
 
     @Test
     void testGetAllProjects() {
         List<Project> projects = Arrays.asList(new Project(), new Project());
         when(projectRepo.findAll()).thenReturn(projects);
-        List<Project> result = projectService.getAllProjects();
+    List<Project> result = projectService.fetchAllProjects("token");
         assertEquals(2, result.size());
     }
 
     @Test
     void testGetProjectById_Found() {
         Project project = new Project();
-        project.setManagerID(1L); // <-- set it directly
+    project.setManagerId(1L); // <-- set it directly
 
         when(jwtUtil.extractRole(anyString())).thenReturn("Manager");
         when(projectRepo.findById(1L)).thenReturn(Optional.of(project));
         when(jwtUtil.extractUserId(anyString())).thenReturn(1L);
 
-        Project result = projectService.getProjectById("token", 1L);
-        assertNotNull(result);
-        assertEquals(1L, result.getManagerID());
+    Project result = projectService.fetchProjectById("token", 1L);
+    assertNotNull(result);
+    assertEquals(1L, result.getManagerId());
     }
 
 
     @Test
     void testGetProjectById_NotFound() {
         when(projectRepo.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> projectService.getProjectById("token", 99L));
+        assertThrows(RuntimeException.class, () -> projectService.fetchProjectById("token", 99L));
     }
 
     @Test
     void testCreateProject() {
         Project project = new Project();
         when(projectRepo.save(any(Project.class))).thenReturn(project);
-        Project result = projectService.createProject(project);
-        assertNotNull(result);
+    Project result = projectService.createProject(project, "token");
+    assertNotNull(result);
     }
 
     @Test
     void testUpdateProject() {
         Project project = new Project();
-        project.setProjectID(1L);      
-        project.setManagerID(1L);      
+    project.setProjectId(1L);      
+    project.setManagerId(1L);      
 
         when(projectRepo.existsById(1L)).thenReturn(true);
         when(projectRepo.findById(1L)).thenReturn(Optional.of(project));

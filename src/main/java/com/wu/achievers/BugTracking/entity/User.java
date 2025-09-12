@@ -1,6 +1,5 @@
 package com.wu.achievers.BugTracking.entity;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +16,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     @Column(name = "UserID")
-    private Long userID;
+    private Long userId;
 
     @Column(name = "FirstName", length = 50, nullable = false)
     private String firstname;
@@ -35,31 +34,30 @@ public class User {
     private String role;
 
     @Column(name = "ManagerID")
-    private Long managerID;
+    private Long managerId;
 
     // Default constructor
     public User() {
     }
 
     // Parameterized constructor
-    public User(Long userID, String firstname, String lastname, String email, String password, String role, Long managerID) {
-         
-        this.userID = userID;
+    public User(Long userId, String firstname, String lastname, String email, String password, String role, Long managerId) {
+        this.userId = userId;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
         this.role = role;
-        this.managerID = managerID;
+        this.managerId = managerId;
     }
 
     // Getters and Setters
-    public Long getUserID() {
-        return userID;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUserID(Long userID) {
-        this.userID = userID;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getFirstname() {
@@ -102,11 +100,11 @@ public class User {
         this.role = role;
     }
 
-    public Long getManagerID() {
-        return managerID;
+    public Long getManagerId() {
+        return managerId;
     }
 
-    public void setManagerID(Long managerID) {
-        this.managerID = managerID;
+    public void setManagerId(Long managerId) {
+        this.managerId = managerId;
     }
 }

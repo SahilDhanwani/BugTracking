@@ -10,25 +10,25 @@ import java.util.Date;
 public class JwtUtil {
 
     // Use a static secret for demonstration; in production, store securely
-    private final javax.crypto.SecretKey key = Keys.hmacShaKeyFor("YourSuperSecretKeyForJWTsMustBeAtLeast256BitsLong!".getBytes());
-    private final long EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour in ms
+    private final javax.crypto.SecretKey jwtSecretKey = Keys.hmacShaKeyFor("YourSuperSecretKeyForJWTsMustBeAtLeast256BitsLong!".getBytes());
+    private final long jwtExpirationTimeMs = 60 * 60 * 1000; // 1 hour in ms
 
     public String generateToken(String email, String role, Long userId) {
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
-        Date expiry = new Date(nowMillis + EXPIRATION_TIME);
+        Date expiry = new Date(nowMillis + jwtExpirationTimeMs);
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
                 .claim("userId", userId)
                 .issuedAt(now)
                 .expiration(expiry)
-                .signWith(key)
+                .signWith(jwtSecretKey)
                 .compact();
     }
 
     public Claims extractClaims(String token) {
-        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+        return Jwts.parser().verifyWith(jwtSecretKey).build().parseSignedClaims(token).getPayload();
     }
 
     public boolean isTokenValid(String token, String email) {
@@ -37,14 +37,14 @@ public class JwtUtil {
     }
 
     public String extractRole(String token) {
-        String jwt_token = token.substring(7);
-        Claims claims = extractClaims(jwt_token);
+        String jwtToken = token.substring(7);
+        Claims claims = extractClaims(jwtToken);
         return claims.get("role", String.class);
     }
 
     public Long extractUserId(String token) {
-        String jwt_token = token.substring(7);
-        Claims claims = extractClaims(jwt_token);
+        String jwtToken = token.substring(7);
+        Claims claims = extractClaims(jwtToken);
         return claims.get("userId", Long.class);
     }
 }

@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
+
     @Mock
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
@@ -25,7 +26,6 @@ public class UserServiceTest {
 
     @Mock
     private JwtUtil jwtUtil;
-
 
     @InjectMocks
     private UserService userService;
@@ -36,33 +36,33 @@ public class UserServiceTest {
         Mockito.when(jwtUtil.extractRole(anyString())).thenReturn("Admin");
         Mockito.when(jwtUtil.extractUserId(anyString())).thenReturn(1L);
         Mockito.when(userRepo.findById(1L)).thenReturn(Optional.of(user));
-        Optional<User> found = userService.getUserById(1L, "token");
-        assertTrue(found.isPresent());
-        assertEquals("admin@example.com", found.get().getEmail());
+        User found = userService.fetchUserById(1L, "token");
+        assertNotNull(found);
+        assertEquals("admin@example.com", found.getEmail());
     }
 
     @Test
     void testSignup_NewUser() {
-    User user = new User(null, "Test", "User", "newuser@example.com", "pass", "Admin", null);
-    Mockito.when(userRepo.findByEmail("newuser@example.com")).thenReturn(Optional.empty());
-    Mockito.when(userRepo.save(any(User.class))).thenReturn(user);
-    Mockito.when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-    User created = userService.signup(user);
-    assertNotNull(created);
-    assertEquals("newuser@example.com", created.getEmail());
+        User user = new User(null, "Test", "User", "newuser@example.com", "pass", "Admin", null);
+        Mockito.when(userRepo.findByEmail("newuser@example.com")).thenReturn(Optional.empty());
+        Mockito.when(userRepo.save(any(User.class))).thenReturn(user);
+        Mockito.when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        User created = userService.registerUser(user);
+        assertNotNull(created);
+        assertEquals("newuser@example.com", created.getEmail());
     }
 
     @Test
     void testSignup_ExistingUser() {
         User user = new User(null, "Test", "User", "existing@example.com", "pass", "Admin", null);
         Mockito.when(userRepo.findByEmail("existing@example.com")).thenReturn(Optional.of(user));
-        User created = userService.signup(user);
+        User created = userService.registerUser(user);
         assertNull(created);
     }
 
     @Test
     void testDeleteUser() {
-        userService.deleteUser(1L);
+        userService.removeUser(1L, "token");
         Mockito.verify(userRepo, Mockito.times(1)).deleteById(1L);
     }
 
@@ -70,8 +70,8 @@ public class UserServiceTest {
     void testFindByEmail() {
         User user = new User(2L, "Test", "User", "findbyemail@example.com", "pass", "Admin", null);
         Mockito.when(userRepo.findByEmail("findbyemail@example.com")).thenReturn(Optional.of(user));
-        Optional<User> found = userService.findByEmail("findbyemail@example.com");
+        Optional<User> found = userService.fetchUserByEmail("findbyemail@example.com");
         assertTrue(found.isPresent());
-        assertEquals(2L, found.get().getUserID());
+        assertEquals(2L, found.get().getUserId());
     }
 }

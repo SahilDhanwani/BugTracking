@@ -28,13 +28,13 @@ public class BugController {
     private BugService bugService;
 
     @GetMapping("/bugs")
-    public List<Bug> getAllBugs(@RequestParam(required = false) Long projectId, @RequestParam(required = false) String status, @RequestParam(required = false) Long assignedTo, @RequestParam(required = false) String priority, @RequestParam(required = false) Date startDate, @RequestParam(required = false) Date endDate) {
-        return bugService.getAllBugs(projectId, status, assignedTo, priority, startDate, endDate);
+    public List<Bug> fetchAllBugs(@RequestParam(required = false) Long projectId, @RequestParam(required = false) String status, @RequestParam(required = false) Long assigneeId, @RequestParam(required = false) String priority, @RequestParam(required = false) Date startDate, @RequestParam(required = false) Date endDate) {
+        return bugService.fetchAllBugs(projectId, status, assigneeId, priority, startDate, endDate);
     }
 
     @GetMapping("/bugs/{id}")
-    public ResponseEntity<Bug> getBugById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
-        Bug bug = bugService.getBugById(id, token);
+    public ResponseEntity<Bug> fetchBugById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
+        Bug bug = bugService.fetchBugById(id, token);
         return ResponseEntity.ok(bug);
     }
 

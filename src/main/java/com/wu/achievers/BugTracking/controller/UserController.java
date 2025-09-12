@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,37 +28,36 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers(@RequestParam(required = false) Long managerId, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<User>> fetchAllUsers(@RequestParam(required = false) Long managerId, @RequestHeader("Authorization") String token) {
         if (managerId == null) {
-            return ResponseEntity.ok(userService.getAllUsers(token));
+            return ResponseEntity.ok(userService.fetchAllUsers(token));
         }
-        return ResponseEntity.ok(userService.getUsersByManagerId(managerId, token));
+        return ResponseEntity.ok(userService.fetchUsersByManagerId(managerId, token));
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(userService.getUserById(id, token));
+    public ResponseEntity<User> fetchUserById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(userService.fetchUserById(id, token));
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> signup(@RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.signup(user));
+    public ResponseEntity<User> registerUser(@RequestBody User user) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(user));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user, HttpServletResponse response) {
-        String jwt = userService.login(user.getEmail(), user.getPassword());
+    public ResponseEntity<String> authenticateUser(@RequestBody User user, HttpServletResponse response) {
+        String jwt = userService.authenticateUser(user.getEmail(), user.getPassword());
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(jwt);
     }
 
     @PutMapping("/users")
-    public ResponseEntity<User> updateUser(@RequestBody User user, @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(userService.updateUser(user, token));
+    public ResponseEntity<User> updateUserDetails(@RequestBody User user, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(userService.updateUserDetails(user, token));
     }
 
-    @DeleteMapping("/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        userService.deleteUser(id, token);
+        userService.removeUser(id, token);
         return ResponseEntity.ok("User Deleted");
     }
 }

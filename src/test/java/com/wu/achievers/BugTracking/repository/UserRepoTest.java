@@ -22,7 +22,7 @@ public class UserRepoTest {
         user.setEmail(email);
         user.setPassword("password");
         user.setRole("Admin");
-        user.setManagerID(managerId);
+    user.setManagerId(managerId);
         return user;
     }
 
@@ -30,7 +30,7 @@ public class UserRepoTest {
     void testFindById() {
         User user = createUser("findbyid@example.com", 1L);
         userRepo.save(user);
-        Optional<User> found = userRepo.findById(user.getUserID());
+    Optional<User> found = userRepo.findById(user.getUserId());
         assertTrue(found.isPresent());
         assertEquals("findbyid@example.com", found.get().getEmail());
     }
@@ -39,7 +39,7 @@ public class UserRepoTest {
     void testSaveUser() {
         User user = createUser("saveuser@example.com", 2L);
         User saved = userRepo.save(user);
-        assertNotNull(saved.getUserID());
+    assertNotNull(saved.getUserId());
         assertEquals("saveuser@example.com", saved.getEmail());
     }
 
@@ -49,7 +49,7 @@ public class UserRepoTest {
         userRepo.save(user);
         Optional<User> found = userRepo.findByEmail("findbyemail@example.com");
         assertTrue(found.isPresent());
-        assertEquals(3L, found.get().getManagerID());
+    assertEquals(3L, found.get().getManagerId());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class UserRepoTest {
         User user2 = createUser("manager2@example.com", 10L);
         userRepo.save(user1);
         userRepo.save(user2);
-        List<User> users = userRepo.findByManagerID(10L);
+    List<User> users = userRepo.findByManagerID(10L);
         assertTrue(users.size() >= 2);
     }
 
@@ -66,16 +66,16 @@ public class UserRepoTest {
     void testCheckByManagerIdAndUserId() {
         User user = createUser("checkmanager@example.com", 20L);
         userRepo.save(user);
-        User found = userRepo.checkByManagerIdAndUserId(20L, user.getUserID());
-        assertNotNull(found);
-        assertEquals("checkmanager@example.com", found.getEmail());
+    Optional<User> found = userRepo.checkByManagerIdAndUserId(20L, user.getUserId());
+    assertTrue(found.isPresent());
+    assertEquals("checkmanager@example.com", found.get().getEmail());
     }
 
     @Test
     void testGetIdsByManagerId() {
         User user = createUser("getids@example.com", 30L);
         userRepo.save(user);
-        List<Long> ids = userRepo.getIdsByManagerId(30L);
-        assertTrue(ids.contains(user.getUserID()));
+    List<Long> ids = userRepo.getIdsByManagerId(30L);
+    assertTrue(ids.contains(user.getUserId()));
     }
 }

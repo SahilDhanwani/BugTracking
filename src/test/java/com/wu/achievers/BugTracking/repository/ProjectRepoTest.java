@@ -6,8 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.dao.EmptyResultDataAccessException;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -27,12 +25,12 @@ class ProjectRepoTest {
         // create sample projects
         project1 = new Project();
         project1.setProjectName("Alpha");
-        project1.setManagerID(1L);
+    project1.setManagerId(1L);
         projectRepo.save(project1);
 
         project2 = new Project();
         project2.setProjectName("Beta");
-        project2.setManagerID(2L);
+    project2.setManagerId(2L);
         projectRepo.save(project2);
     }
 
@@ -43,7 +41,7 @@ class ProjectRepoTest {
 
         assertEquals(1, result.size());
         assertEquals("Alpha", result.get(0).getProjectName());
-        assertEquals(1L, result.get(0).getManagerID());
+    assertEquals(1L, result.get(0).getManagerId());
     }
 
     @Test
@@ -58,17 +56,17 @@ class ProjectRepoTest {
     void save_assignsGeneratedId() {
         Project p = new Project();
         p.setProjectName("Gamma");
-        p.setManagerID(3L);
+    p.setManagerId(3L);
 
         Project saved = projectRepo.save(p);
-        assertNotNull(saved.getProjectID(), "Generated ID should not be null");
+    assertNotNull(saved.getProjectId(), "Generated ID should not be null");
         assertEquals("Gamma", saved.getProjectName());
     }
 
     @Test
     @DisplayName("findById should retrieve an existing project")
     void findById_returnsExistingProject() {
-        Optional<Project> found = projectRepo.findById(project1.getProjectID());
+    Optional<Project> found = projectRepo.findById(project1.getProjectId());
         assertTrue(found.isPresent());
         assertEquals("Alpha", found.get().getProjectName());
     }
@@ -76,7 +74,7 @@ class ProjectRepoTest {
     @Test
     @DisplayName("deleteById should remove project")
     void deleteById_removesProject() {
-        Long idToDelete = project2.getProjectID();
+    Long idToDelete = project2.getProjectId();
         projectRepo.deleteById(idToDelete);
 
         assertFalse(projectRepo.findById(idToDelete).isPresent(),

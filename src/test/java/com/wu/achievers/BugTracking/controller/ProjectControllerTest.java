@@ -22,7 +22,7 @@ import com.wu.achievers.BugTracking.exceptionHandling.GlobalExceptionHandler;
 
 class ProjectControllerTest {
 
-    private MockMvc mockMvc;
+    private final MockMvc mockMvc;
     @Mock
     private ProjectService projectService;
     @InjectMocks
@@ -38,7 +38,7 @@ class ProjectControllerTest {
     @Test
     void testGetAllProjects() throws Exception {
         List<Project> projects = Arrays.asList(new Project(), new Project());
-        when(projectService.getProjectsByRole(anyString())).thenReturn(projects);
+    when(projectService.fetchAllProjects(anyString())).thenReturn(projects);
         mockMvc.perform(get("/api/projects").header("Authorization", "token"))
                 .andExpect(status().isOk());
     }
@@ -46,14 +46,14 @@ class ProjectControllerTest {
     @Test
     void testGetProjectById_Found() throws Exception {
         Project project = new Project();
-        when(projectService.getProjectById(anyString(), eq(1L))).thenReturn(project);
+    when(projectService.fetchProjectById(anyString(), eq(1L))).thenReturn(project);
         mockMvc.perform(get("/api/projects/1").header("Authorization", "token"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void testGetProjectById_NotFound() throws Exception {
-        when(projectService.getProjectById(anyString(), eq(99L))).thenReturn(null);
+    when(projectService.fetchProjectById(anyString(), eq(99L))).thenReturn(null);
         mockMvc.perform(get("/api/projects/99").header("Authorization", "token"))
                 .andExpect(status().isNotFound());
     }
@@ -61,7 +61,7 @@ class ProjectControllerTest {
     @Test
     void testCreateProject() throws Exception {
         Project project = new Project();
-        when(projectService.createProject(any(Project.class))).thenReturn(project);
+    when(projectService.createProject(any(Project.class), anyString())).thenReturn(project);
         mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
@@ -81,8 +81,8 @@ class ProjectControllerTest {
 
     @Test
     void testDeleteProject() throws Exception {
-        when(projectService.deleteProject(eq(1L))).thenReturn(true);
-        mockMvc.perform(delete("/api/projects/1"))
-                .andExpect(status().isNoContent());
+        doNothing().when(projectService).removeProject(eq(1L), anyString());
+        mockMvc.perform(delete("/api/projects/1").header("Authorization", "token"))
+                .andExpect(status().isOk());
     }
 }

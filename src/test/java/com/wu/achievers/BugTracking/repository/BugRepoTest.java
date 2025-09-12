@@ -16,10 +16,10 @@ class BugRepoTest {
     @Test
     void testSaveAndFindByAssigneeId() {
         Bug bug = new Bug();
-        bug.setAssignedTo(1L);
+    bug.setAssigneeId(1L);
         bugRepo.save(bug);
         List<Bug> bugs = bugRepo.findByAssigneeId(1L);
         assertFalse(bugs.isEmpty());
-        assertEquals(1L, bugs.get(0).getAssignedTo());
+    assertEquals(1L, bugs.get(0).getAssigneeId());
     }
 }
