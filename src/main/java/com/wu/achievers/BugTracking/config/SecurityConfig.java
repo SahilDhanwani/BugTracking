@@ -11,6 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.wu.achievers.BugTracking.filter.JwtAuthFilter;
 
@@ -23,13 +25,18 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    @Bean
+   @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> {}) // enable CORS (configured separately in CorsConfig)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+
+                // Public endpoints
                 .requestMatchers("/api/login").permitAll()
+                .requestMatchers("/api/signup").permitAll()
+    
                 .requestMatchers(
                         "/swagger-ui.html",
                         "/swagger-ui/**",
@@ -38,24 +45,43 @@ public class SecurityConfig {
                         "/v3/api-docs.yaml",
                         "/webjars/**"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/{id}").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
-                .requestMatchers("/api/signup", "api/users/{id}").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/bugs").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
-                .requestMatchers(HttpMethod.POST, "/api/bugs").hasAnyRole("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
-                .requestMatchers("/api/users/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
-                .requestMatchers(HttpMethod.GET, "/api/projects/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
-                .requestMatchers(HttpMethod.GET, "/api/projects").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
-                .requestMatchers(HttpMethod.PUT, "/api/projects").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
-                .requestMatchers(HttpMethod.POST, "/api/projects").hasAnyRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasAnyRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
-                .anyRequest().hasRole("ADMIN")
-                )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+                // User endpoints
+                .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/{id}")
+                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
+                .requestMatchers("/api/users/**")
+                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
+                .requestMatchers("api/users/{id}")
+                    .hasAuthority("Admin")
+
+                // Bug endpoints
+                .requestMatchers(HttpMethod.PUT, "/api/bugs")
+                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
+                .requestMatchers(HttpMethod.POST, "/api/bugs")
+                    .hasAnyAuthority("Manager", "Admin")
+                .requestMatchers(HttpMethod.DELETE, "/api/bugs/**")
+                    .hasAnyAuthority("Manager", "Admin")
+                .requestMatchers(HttpMethod.GET, "/api/bugs/**")
+                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
+
+                // Project endpoints
+                .requestMatchers(HttpMethod.GET, "/api/projects", "/api/projects/**")
+                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
+                .requestMatchers(HttpMethod.PUT, "/api/projects")
+                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
+                .requestMatchers(HttpMethod.POST, "/api/projects")
+                    .hasAuthority("Admin")
+                .requestMatchers(HttpMethod.DELETE, "/api/projects/**")
+                    .hasAuthority("Admin")
+
+                // Fallback
+                .anyRequest().hasAuthority("Admin")
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -66,4 +92,18 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+       @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/api/**")
+                        .allowedOrigins("http://localhost:3000")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .exposedHeaders("Authorization") // <--- important
+                        .allowCredentials(true);
+            }
+        };
+}
 }

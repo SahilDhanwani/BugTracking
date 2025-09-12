@@ -25,10 +25,19 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    @GetMapping("/projects")
-    public List<Project> getAllProjects(@RequestHeader("Authorization") String token) {
-        return projectService.getProjectsByRole(token);
+    // @GetMapping("/projects")
+    // public List<Project> getAllProjects(@RequestHeader("Authorization") String token) {
+    //     return projectService.getProjectsByRole(token);
+    // }
+   @GetMapping("/projects")
+public List<Project> getAllProjects(@RequestHeader("Authorization") String token) {
+    //System.out.println("Authorization header: " + token);
+    if (token.startsWith("Bearer ")) {
+        token = token.substring(7);
     }
+    //System.out.println("Token after strip: " + token);
+    return projectService.getProjectsByRole(token);
+}
 
     // @GetMapping("/projects/{id}")
     // public Project getProjectById(@PathVariable Long id) throws NotFoundException{

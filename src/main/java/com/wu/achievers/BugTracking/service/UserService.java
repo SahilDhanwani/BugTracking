@@ -103,6 +103,16 @@ public class UserService {
         }
     }
 
+public User getUserFromToken(String token) {
+    if (token.startsWith("Bearer ")) {
+        token = token.substring(7);
+    }
+    Long userId = jwtUtil.extractUserId(token);
+    return userRepo.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+}
+
+
     public boolean checkUserByManagerIdAndUserId(Long managerId, Long userId) {
         User user = userRepo.checkByManagerIdAndUserId(managerId, userId);
         return user != null;
