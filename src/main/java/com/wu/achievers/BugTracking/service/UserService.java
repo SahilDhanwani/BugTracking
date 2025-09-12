@@ -111,4 +111,9 @@ public class UserService {
     public Optional<User> findByEmail(String email) {
         return userRepo.findByEmail(email);
     }
+
+    public boolean checkUserById(long managerId) {
+        return userRepo.existsById(managerId);
+        
+    }
 }
