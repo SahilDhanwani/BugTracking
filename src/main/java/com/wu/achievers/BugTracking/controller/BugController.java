@@ -57,8 +57,9 @@ public class BugController {
     }
 
     @DeleteMapping("/bugs/{id}")
-    public void deleteBug(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        bugService.deleteBug(id, token);
+    public ResponseEntity<Bug> deleteBug(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        Bug deletedBug = bugService.deleteBug(id, token);
+        return ResponseEntity.ok(deletedBug);
     }
 
 }

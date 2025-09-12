@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.Project;
+import com.wu.achievers.BugTracking.exceptionHandling.BadRequestException;
 import com.wu.achievers.BugTracking.repository.ProjectRepo;
 import com.wu.achievers.BugTracking.util.JwtUtil;
 
@@ -30,16 +31,14 @@ public class ProjectService {
         Project p = projectRepo.findById(id).orElseThrow(() -> new RuntimeException("Project not found"));
         if (p == null) {
             //Project doesn't exists
-        }
-        else if(role.equals("Developer") || role.equals("Tester")) {
-            boolean userExists =  userService.checkUserByManagerID(p.getManagerID(), jwtUtil.extractUserId(token));
-            if(!userExists) {
+        } else if (role.equals("Developer") || role.equals("Tester")) {
+            boolean userExists = userService.checkUserByManagerID(p.getManagerID(), jwtUtil.extractUserId(token));
+            if (!userExists) {
                 //User not accessible exception
             }
-        }
-        else if(role.equals("Manager")) {
-            
-            if(!p.getManagerID().equals(jwtUtil.extractUserId(token))) {
+        } else if (role.equals("Manager")) {
+
+            if (!p.getManagerID().equals(jwtUtil.extractUserId(token))) {
                 //Access exception
                 return null;
             }
@@ -54,9 +53,8 @@ public class ProjectService {
     public Project updateProject(String token, Project project) {
         if (projectRepo.existsById(project.getProjectID())) {
             Project currentProject = projectRepo.findById(project.getProjectID()).orElseThrow(() -> new RuntimeException("Project not found"));
-            if(!currentProject.getManagerID().equals(project.getManagerID()) && jwtUtil.extractRole(token).equals("Manager")) {
-                //Cannot change the manager exception
-                return null;
+            if (!currentProject.getManagerID().equals(project.getManagerID()) && jwtUtil.extractRole(token).equals("Manager")) {
+                throw new BadRequestException("Manager cannot change project ownership");
             }
             return projectRepo.save(project);
         }
@@ -78,17 +76,20 @@ public class ProjectService {
 
     public List<Project> getProjectsByRole(String token) {
         String role = jwtUtil.extractRole(token);
-        
-        if(role.equals("Admin")) {
+
+        if (role.equals("Admin")) {
             return projectRepo.findAll();
-        }
-        else if(role.equals("Manager")) {
+        } else if (role.equals("Manager")) {
             return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
         }
 
         Long managerId = userService.getUserById(jwtUtil.extractUserId(token), token).orElseThrow().getManagerID();
-        
+
         return projectRepo.findByManagerId(managerId);
+    }
+
+    private void adRequestException(String manager_cannot_change_project_ownership) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }
