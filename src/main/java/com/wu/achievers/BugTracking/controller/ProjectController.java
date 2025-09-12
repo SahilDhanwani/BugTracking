@@ -30,10 +30,6 @@ public class ProjectController {
         return projectService.getProjectsByRole(token);
     }
 
-    // @GetMapping("/projects/{id}")
-    // public Project getProjectById(@PathVariable Long id) throws NotFoundException{
-    //     return projectService.getProjectById(id);
-    // }
     @GetMapping("/projects/{id}")
     public ResponseEntity<Project> getProjectById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
         Project project = projectService.getProjectById(token, id);
@@ -44,22 +40,22 @@ public class ProjectController {
     }
 
     @PostMapping("/projects")
-
-    public Project createProject(@RequestBody Project project) {
-        return projectService.createProject(project);
+    public ResponseEntity<Project> createProject(@RequestBody Project project, @RequestHeader("Authorization") String token) {
+        Project newProject = projectService.createProject(project, token);
+        return ResponseEntity.ok(newProject);
     }
 
     @PutMapping("/projects")
-    public Project updateProject(@RequestHeader("Authorization") String token, @RequestBody Project project) {
-        return projectService.updateProject(token, project);
+    public ResponseEntity<Project> updateProject(@RequestHeader("Authorization") String token, @RequestBody Project project) {
+        Project updatedProject = projectService.updateProject(token, project);
+        return ResponseEntity.ok(updatedProject);
     }
 
     @DeleteMapping("/projects/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-        if (projectService.deleteProject(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        
+        projectService.deleteProject(id, token);
+        return ResponseEntity.ok().build();
     }
 
 }

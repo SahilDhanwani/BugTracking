@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.User;
+import com.wu.achievers.BugTracking.exceptionHandling.BadRequestException;
+import com.wu.achievers.BugTracking.exceptionHandling.NotFoundException;
 import com.wu.achievers.BugTracking.repository.UserRepo;
 import com.wu.achievers.BugTracking.util.JwtUtil;
 
@@ -30,61 +32,81 @@ public class UserService {
     private JwtUtil jwtUtil;
 
     public List<User> getAllUsers(String token) {
+        List<User> users;
         String role = jwtUtil.extractRole(token);
         if ("Admin".equals(role)) {
-            return userRepo.findAll();
+            users = userRepo.findAll();
+            
         } else if ("Manager".equals(role)) {
             Long managerId = jwtUtil.extractUserId(token);
-            return userRepo.findByManagerID(managerId);
+            users = userRepo.findByManagerID(managerId);
         }
-        return userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
+        else {
+            users = userRepo.findById(jwtUtil.extractUserId(token)).map(List::of).orElse(List.of());
+        }
+        
+        if(users.isEmpty())  throw new NotFoundException("No Users exist");
+        return users;
     }
 
-    public Optional<User> getUserById(Long id, String token) {
+    public User getUserById(Long id, String token) {
         String role = jwtUtil.extractRole(token);
         Long userId = jwtUtil.extractUserId(token);
-
+        User user = null;
         if ("Admin".equals(role) || userId.equals(id)) {
-            return userRepo.findById(id);
+            user = userRepo.findById(id).orElse(null);
         }
 
-        if ("Manager".equals(role)) {
-            List<Long> arr = userRepo.getIdsByManagerId(userId);
-            for (Long i : arr) {
-                if (i.equals(id)) {
-                    return userRepo.findById(id);
-                }
-            }
+        else if ("Manager".equals(role)) {
+            user = userRepo.checkByManagerIdAndUserId(userId, id).orElse(null);
+            if(user == null)
+            throw new BadRequestException("User with ID " + id + " does not exist or is not the part of your team");
         }
-        return null;
+
+        if(user == null)
+            throw new NotFoundException("User with ID " + id + " not found");
+            
+        return user;
     }
 
     public User updateUser(User user, String token) {
+
+        String role = jwtUtil.extractRole(token);
         Long userId = jwtUtil.extractUserId(token);
-        if (userId.equals(user.getUserID()) && userRepo.existsById(user.getUserID())) {
-            user.setPassword(userRepo.findById(user.getUserID()).get().getPassword());
+
+        User newUser = userRepo.findById(user.getUserID()).orElse(null);
+
+        if(newUser == null) throw new NotFoundException("No Such User Exists in the DB");
+
+        if("Admin".equals(role)) {
+            newUser.setManagerID(user.getManagerID());
         }
-        return userRepo.save(user);
+        else if (userId.equals(user.getUserID())) {
+            newUser.setFirstname(user.getFirstname());
+            newUser.setLastname(user.getLastname());
+            newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        return userRepo.save(newUser);
     }
 
-    public boolean checkUserByManagerID(Long managerId, Long userId) {
-        User user = userRepo.checkByManagerIdAndUserId(managerId, userId);
-        return user != null;
-    }
+    public void deleteUser(Long id, String token) {
 
-    public void deleteUser(Long id) {
-        // AddException
-        userRepo.deleteById(id);
+        String role = jwtUtil.extractRole(token);
+        if("Admin".equals(role) && userRepo.existsById(id)) 
+            userRepo.deleteById(id);
+        else 
+            throw new BadRequestException("Either you are not authorized to do so or the user does not exists");
     }
 
     public List<User> getUsersByManagerId(Long managerId, String token) {
-        // AddException: Agar ye function ne kuch return nahi kiya toh, Write ki no such manager exists
-        return userRepo.findByManagerID(managerId);
+        List<User> arr = userRepo.findByManagerID(managerId);
+        if(arr.isEmpty()) throw new BadRequestException("Incorrect manager ID or no such users exists");
+        return arr;
     }
 
     public User signup(User user) {
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
-            return null;
+            throw new BadRequestException("User Email already exists");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepo.save(user);
@@ -99,16 +121,27 @@ public class UserService {
             User user = userRepo.findByEmail(email).orElseThrow();
             return jwtUtil.generateToken(email, user.getRole(), user.getUserID());
         } catch (AuthenticationException e) {
-            return "Invalid credentials";
+            throw new BadRequestException("Invalid Credentials");
         }
     }
 
+    // Function not used by controller directly
+    public boolean checkUserByManagerID(Long managerId, Long userId) {
+        Optional<User> user = userRepo.checkByManagerIdAndUserId(managerId, userId);
+        return user != null;
+    }
+
     public boolean checkUserByManagerIdAndUserId(Long managerId, Long userId) {
-        User user = userRepo.checkByManagerIdAndUserId(managerId, userId);
+        Optional<User> user = userRepo.checkByManagerIdAndUserId(managerId, userId);
         return user != null;
     }
 
     public Optional<User> findByEmail(String email) {
         return userRepo.findByEmail(email);
+    }
+
+    public boolean checkUserById(long managerId) {
+        return userRepo.existsById(managerId);
+        
     }
 }
