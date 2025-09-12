@@ -111,7 +111,7 @@ public class ProjectService {
             return project;
         }
 
-        Long managerId = userService.getUserById(jwtUtil.extractUserId(token), token).orElseThrow().getManagerID();
+        Long managerId = userService.getUserById(jwtUtil.extractUserId(token), token).getManagerID();
         
         project = projectRepo.findByManagerId(managerId); 
         if(project.isEmpty()) {
