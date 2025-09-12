@@ -55,8 +55,6 @@ public class UserService {
         User user = null;
         if ("Admin".equals(role) || userId.equals(id)) {
             user = userRepo.findById(id).orElse(null);
-            if(user == null)
-            throw new NotFoundException("User with ID " + id + " not found");
         }
 
         else if ("Manager".equals(role)) {
@@ -64,6 +62,10 @@ public class UserService {
             if(user == null)
             throw new BadRequestException("User with ID " + id + " does not exist or is not the part of your team");
         }
+
+        if(user == null)
+            throw new NotFoundException("User with ID " + id + " not found");
+            
         return user;
     }
 

@@ -42,7 +42,7 @@ public class SecurityConfig {
                 // .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAnyRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/users").hasAnyRole("ADMIN", "MANAGER", "DEVELOPER", "TESTER")
-                .requestMatchers(HttpMethod.POST, "/api/signup").hasRole("ADMIN")
+                // .requestMatchers(HttpMethod.POST, "/api/signup").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/bugs").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers(HttpMethod.POST, "/api/bugs").hasAnyRole("MANAGER", "ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN")
@@ -53,7 +53,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/projects").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers(HttpMethod.POST, "/api/projects").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
                 .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasAnyRole("ADMIN", "MANAGER", "DEVELOPER", "TESTER")
-                // .requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
                 .anyRequest().hasRole("ADMIN")
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
