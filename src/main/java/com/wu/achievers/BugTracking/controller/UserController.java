@@ -61,6 +61,7 @@ public class UserController {
     // public User createUser(@RequestBody User user) {
     //     return userService.createUser(user);
     // }
+    
     @PostMapping("/signup")
     public ResponseEntity<User> signup(@RequestBody User user) {
         Optional<User> existingUser = userService.findByEmail(user.getEmail());
