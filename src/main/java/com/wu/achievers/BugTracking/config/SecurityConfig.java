@@ -45,40 +45,25 @@ public class SecurityConfig {
                         "/v3/api-docs.yaml",
                         "/webjars/**"
                 ).permitAll()
-
-                // User endpoints
-                .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/{id}")
-                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
-                .requestMatchers("/api/users/**")
-                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
-                .requestMatchers("api/users/{id}")
-                    .hasAuthority("Admin")
-
-                // Bug endpoints
-                .requestMatchers(HttpMethod.PUT, "/api/bugs")
-                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
-                .requestMatchers(HttpMethod.POST, "/api/bugs")
-                    .hasAnyAuthority("Manager", "Admin")
-                .requestMatchers(HttpMethod.DELETE, "/api/bugs/**")
-                    .hasAnyAuthority("Manager", "Admin")
-                .requestMatchers(HttpMethod.GET, "/api/bugs/**")
-                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
-
-                // Project endpoints
-                .requestMatchers(HttpMethod.GET, "/api/projects", "/api/projects/**")
-                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
-                .requestMatchers(HttpMethod.PUT, "/api/projects")
-                    .hasAnyAuthority("Manager", "Admin", "Developer", "Tester")
-                .requestMatchers(HttpMethod.POST, "/api/projects")
-                    .hasAuthority("Admin")
-                .requestMatchers(HttpMethod.DELETE, "/api/projects/**")
-                    .hasAuthority("Admin")
-
-                // Fallback
-                .anyRequest().hasAuthority("Admin")
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/{id}").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                // .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasAnyRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/users").hasAnyRole("ADMIN", "MANAGER", "DEVELOPER", "TESTER")
+                // .requestMatchers(HttpMethod.POST, "/api/signup").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/bugs").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers(HttpMethod.POST, "/api/bugs").hasAnyRole("MANAGER", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/bugs/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers("/api/users/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers(HttpMethod.GET, "/api/projects/**").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                //.requestMatchers(HttpMethod.GET, "/api/projects").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers(HttpMethod.PUT, "/api/projects").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers(HttpMethod.POST, "/api/projects").hasAnyRole("MANAGER", "ADMIN", "DEVELOPER", "TESTER")
+                .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasAnyRole("ADMIN", "MANAGER", "DEVELOPER", "TESTER")
+                .requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
+                .anyRequest().hasRole("ADMIN")
+                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

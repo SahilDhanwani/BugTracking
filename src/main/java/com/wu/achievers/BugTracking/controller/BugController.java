@@ -28,37 +28,32 @@ public class BugController {
     private BugService bugService;
 
     @GetMapping("/bugs")
-    public List<Bug> getAllBugs(@RequestParam(required = false) Long projectId, @RequestParam(required = false) String status, @RequestParam(required = false) Long assignedTo, @RequestParam(required = false) String priority, @RequestParam(required = false) Date startDate, @RequestParam(required = false) Date endDate) {
-        return bugService.getAllBugs(projectId, status, assignedTo, priority, startDate, endDate);
+    public List<Bug> fetchAllBugs(@RequestParam(required = false) Long projectId, @RequestParam(required = false) String status, @RequestParam(required = false) Long assigneeId, @RequestParam(required = false) String priority, @RequestParam(required = false) Date startDate, @RequestParam(required = false) Date endDate) {
+        return bugService.fetchAllBugs(projectId, status, assigneeId, priority, startDate, endDate);
     }
 
-    // @GetMapping("/bugs/{id}")
-    // public Bug getBugById(@PathVariable Long id) {
-    //     return bugService.getBugById(id);
-    // }
     @GetMapping("/bugs/{id}")
-    public ResponseEntity<Bug> getBugById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
-        Bug bug = bugService.getBugById(id, token);
-        if (bug == null) {
-            throw new NotFoundException("Bug with ID " + id + " not found");
-        }
+    public ResponseEntity<Bug> fetchBugById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
+        Bug bug = bugService.fetchBugById(id, token);
         return ResponseEntity.ok(bug);
     }
 
     @PostMapping("/bugs")
-    public Bug createBug(@RequestBody Bug bug, @RequestHeader("Authorization") String token) {
-        return bugService.createBug(bug, token);
+    public ResponseEntity<Bug> createBug(@RequestBody Bug bug, @RequestHeader("Authorization") String token) {
+        Bug newBug = bugService.createBug(bug, token);
+        return ResponseEntity.ok(newBug);
     }
 
     @PutMapping("/bugs")
-    public Bug updateBug(@RequestBody Bug bug, @RequestHeader("Authorization") String token) {
-        System.out.println("Test1");
-        return bugService.updateBug(bug, token);
+    public ResponseEntity<Bug> updateBug(@RequestBody Bug bug, @RequestHeader("Authorization") String token) {
+        Bug updatedBug = bugService.updateBug(bug, token);
+        return ResponseEntity.ok(updatedBug);
     }
 
     @DeleteMapping("/bugs/{id}")
-    public void deleteBug(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        bugService.deleteBug(id, token);
+    public ResponseEntity<Bug> deleteBug(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        Bug deletedBug = bugService.deleteBug(id, token);
+        return ResponseEntity.ok(deletedBug);
     }
 
 }

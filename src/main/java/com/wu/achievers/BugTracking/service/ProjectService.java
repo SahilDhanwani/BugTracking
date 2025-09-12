@@ -6,14 +6,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.Project;
+import com.wu.achievers.BugTracking.exceptionHandling.BadRequestException;
+import com.wu.achievers.BugTracking.exceptionHandling.NotFoundException;
 import com.wu.achievers.BugTracking.repository.ProjectRepo;
 import com.wu.achievers.BugTracking.util.JwtUtil;
 
 @Service
 public class ProjectService {
 
+    public List<Project> fetchAllProjects(String jwtToken) {
+        return getProjectsByRole(jwtToken);
+    }
+
+    public void removeProject(Long projectId, String jwtToken) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        if (userRole == null || !userRole.equals("Admin")) {
+            throw new BadRequestException("Only Admin can delete project");
+        }
+        if (!projectRepository.existsById(projectId)) {
+            throw new NotFoundException("Project with ID " + projectId + " does not exist");
+        }
+        projectRepository.deleteById(projectId);
+    }
+
     @Autowired
-    private ProjectRepo projectRepo;
+    private ProjectRepo projectRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -21,74 +38,91 @@ public class ProjectService {
     @Autowired
     private UserService userService;
 
-    public List<Project> getAllProjects() {
-        return projectRepo.findAll();
-    }
-
-    public Project getProjectById(String token, long id) {
-        String role = jwtUtil.extractRole(token);
-        Project p = projectRepo.findById(id).orElseThrow(() -> new RuntimeException("Project not found"));
-        if (p == null) {
-            //Project doesn't exists
+    public Project fetchProjectById(String jwtToken, long projectId) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        Project project = projectRepository.findById(projectId).orElse(null);
+        if (project == null) {
+            throw new NotFoundException("Project with id " + projectId + " not found");
         }
-        else if(role.equals("Developer") || role.equals("Tester")) {
-            boolean userExists =  userService.checkUserByManagerID(p.getManagerID(), jwtUtil.extractUserId(token));
-            if(!userExists) {
-                //User not accessible exception
+        if (userRole.equals("Developer") || userRole.equals("Tester")) {
+            boolean userExists = userService.existsUserByManagerId(project.getManagerId(), jwtUtil.extractUserId(jwtToken));
+            if (!userExists) {
+                throw new BadRequestException("Project with id " + projectId + " not under your management");
+            }
+        } else if (userRole.equals("Manager")) {
+            if (!project.getManagerId().equals(jwtUtil.extractUserId(jwtToken))) {
+                throw new BadRequestException("Project with id " + projectId + " not under your management");
             }
         }
-        else if(role.equals("Manager")) {
-            
-            if(!p.getManagerID().equals(jwtUtil.extractUserId(token))) {
-                //Access exception
-                return null;
-            }
-        }
-        return projectRepo.findById(id).orElse(null);
+        return projectRepository.findById(projectId).orElse(null);
     }
 
-    public Project createProject(Project project) {
-        return projectRepo.save(project);
+    public Project createProject(Project project, String jwtToken) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        if (!userRole.equals("Admin")) {
+            throw new BadRequestException("Only Admin can create project");
+        }
+        long managerId = project.getManagerId();
+        if (!userService.existsUserById(managerId)) {
+            throw new NotFoundException("Manager with id " + managerId + " does not exist");
+        }
+        return projectRepository.save(project);
     }
 
-    public Project updateProject(String token, Project project) {
-        if (projectRepo.existsById(project.getProjectID())) {
-            Project currentProject = projectRepo.findById(project.getProjectID()).orElseThrow(() -> new RuntimeException("Project not found"));
-            if(!currentProject.getManagerID().equals(project.getManagerID()) && jwtUtil.extractRole(token).equals("Manager")) {
-                //Cannot change the manager exception
-                return null;
-            }
-            return projectRepo.save(project);
+    public Project updateProject(String jwtToken, Project project) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        if (userRole.equals("Developer") || userRole.equals("Tester")) {
+            throw new BadRequestException("You cannot update project");
         }
+        if (projectRepository.existsById(project.getProjectId())) {
+            Project currentProject = projectRepository.findById(project.getProjectId()).orElseThrow(() -> new RuntimeException("Project not found"));
+            if (!currentProject.getManagerId().equals(project.getManagerId()) && userRole.equals("Manager")) {
+                throw new BadRequestException("Manager cannot change project ownership");
+            }
+            return projectRepository.save(project);
+        }
+        throw new NotFoundException("Project with id " + project.getProjectId() + " does not exist");
+    }
+
+    public Void deleteProject(Long projectId, String jwtToken) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        if (userRole == null || !userRole.equals("Admin")) {
+            throw new BadRequestException("Only Admin can delete project");
+        }
+        if (!projectRepository.existsById(projectId)) {
+            throw new NotFoundException("Project with ID " + projectId + " does not exist");
+        }
+        projectRepository.deleteById(projectId);
         return null;
     }
 
-    public boolean deleteProject(Long id) {
-        if (projectRepo.existsById(id)) {
-            projectRepo.deleteById(id);
-            return true;
-        }
-        return false;
-    }
-
-    public List<Project> getProjectsByManagerId(Long managerId) {
-
-        return projectRepo.findByManagerId(managerId);
+    public List<Project> fetchProjectsByManagerId(Long managerId) {
+        return projectRepository.findByManagerId(managerId);
     }
 
     public List<Project> getProjectsByRole(String token) {
         String role = jwtUtil.extractRole(token);
-        
-        if(role.equals("Admin")) {
-            return projectRepo.findAll();
-        }
-        else if(role.equals("Manager")) {
-            return projectRepo.findByManagerId(jwtUtil.extractUserId(token));
+        List<Project> project;
+        if (role.equals("Admin")) {
+            project = projectRepository.findAll();
+            if (project.isEmpty()) {
+                throw new NotFoundException("No projects found");
+            }
+            return project;
+        } else if (role.equals("Manager")) {
+            project = projectRepository.findByManagerId(jwtUtil.extractUserId(token));
+            if (project.isEmpty()) {
+                throw new NotFoundException("No projects found under your management");
+            }
+            return project;
         }
 
-        Long managerId = userService.getUserById(jwtUtil.extractUserId(token), token).orElseThrow().getManagerID();
-        
-        return projectRepo.findByManagerId(managerId);
+        Long managerId = userService.fetchUserById(jwtUtil.extractUserId(token), token).getManagerId();
+
+        project = projectRepository.findByManagerId(managerId);
+        if (project.isEmpty()) {
+            throw new NotFoundException("You are not assigned to any project");
+        }
+        return project;
     }
-
 }

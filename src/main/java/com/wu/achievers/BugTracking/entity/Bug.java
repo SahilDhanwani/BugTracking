@@ -13,13 +13,13 @@ public class Bug {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "bug_seq")
     @Column(name = "BugID")
-    private Long bugID;
+    private Long bugId;
 
     @Column(name = "ProjectID", nullable = false)
-    private Long projectID;
+    private Long projectId;
 
     @Column(name = "AssignedTo", nullable = false)
-    private Long assignedTo;
+    private Long assigneeId;
 
     @Column(name = "Environment", length = 100)
     private String environment;
@@ -47,10 +47,10 @@ public class Bug {
     public Bug() {
     }
 
-    public Bug(Long bugID, Long projectID, Long assignedTo, String environment, String bugTitle, String bugDescription, String priority, String status, java.util.Date startDate, java.util.Date endDate) {
-        this.bugID = bugID;
-        this.projectID = projectID;
-        this.assignedTo = assignedTo;
+    public Bug(Long bugId, Long projectId, Long assigneeId, String environment, String bugTitle, String bugDescription, String priority, String status, java.util.Date startDate, java.util.Date endDate) {
+        this.bugId = bugId;
+        this.projectId = projectId;
+        this.assigneeId = assigneeId;
         this.environment = environment;
         this.bugTitle = bugTitle;
         this.bugDescription = bugDescription;
@@ -61,28 +61,28 @@ public class Bug {
     }
 
     // Getters and Setters
-    public Long getBugID() {
-        return bugID;
+    public Long getBugId() {
+        return bugId;
     }
 
-    public void setBugID(Long bugID) {
-        this.bugID = bugID;
+    public void setBugId(Long bugId) {
+        this.bugId = bugId;
     }
 
-    public Long getProjectID() {
-        return projectID;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setProjectID(Long projectID) {
-        this.projectID = projectID;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
-    public Long getAssignedTo() {
-        return assignedTo;
+    public Long getAssigneeId() {
+        return assigneeId;
     }
 
-    public void setAssignedTo(Long assignedTo) {
-        this.assignedTo = assignedTo;
+    public void setAssigneeId(Long assigneeId) {
+        this.assigneeId = assigneeId;
     }
 
     public String getEnvironment() {

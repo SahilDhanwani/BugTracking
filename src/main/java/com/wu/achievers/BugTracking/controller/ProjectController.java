@@ -25,27 +25,14 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-    // @GetMapping("/projects")
-    // public List<Project> getAllProjects(@RequestHeader("Authorization") String token) {
-    //     return projectService.getProjectsByRole(token);
-    // }
-   @GetMapping("/projects")
-public List<Project> getAllProjects(@RequestHeader("Authorization") String token) {
-    //System.out.println("Authorization header: " + token);
-    if (token.startsWith("Bearer ")) {
-        token = token.substring(7);
+    @GetMapping("/projects")
+    public List<Project> fetchAllProjects(@RequestHeader("Authorization") String token) {
+        return projectService.fetchAllProjects(token);
     }
-    //System.out.println("Token after strip: " + token);
-    return projectService.getProjectsByRole(token);
-}
-
-    // @GetMapping("/projects/{id}")
-    // public Project getProjectById(@PathVariable Long id) throws NotFoundException{
-    //     return projectService.getProjectById(id);
-    // }
+   
     @GetMapping("/projects/{id}")
-    public ResponseEntity<Project> getProjectById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
-        Project project = projectService.getProjectById(token, id);
+    public ResponseEntity<Project> fetchProjectById(@PathVariable Long id, @RequestHeader("Authorization") String token) throws NotFoundException {
+        Project project = projectService.fetchProjectById(token, id);
         if (project == null) {
             throw new NotFoundException("Project with ID " + id + " not found");
         }
@@ -53,22 +40,21 @@ public List<Project> getAllProjects(@RequestHeader("Authorization") String token
     }
 
     @PostMapping("/projects")
-
-    public Project createProject(@RequestBody Project project) {
-        return projectService.createProject(project);
+    public ResponseEntity<Project> createProject(@RequestBody Project project, @RequestHeader("Authorization") String token) {
+        Project newProject = projectService.createProject(project, token);
+        return ResponseEntity.ok(newProject);
     }
 
     @PutMapping("/projects")
-    public Project updateProject(@RequestHeader("Authorization") String token, @RequestBody Project project) {
-        return projectService.updateProject(token, project);
+    public ResponseEntity<Project> updateProject(@RequestHeader("Authorization") String token, @RequestBody Project project) {
+        Project updatedProject = projectService.updateProject(token, project);
+        return ResponseEntity.ok(updatedProject);
     }
 
     @DeleteMapping("/projects/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-        if (projectService.deleteProject(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> removeProject(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        projectService.removeProject(id, token);
+        return ResponseEntity.ok().build();
     }
 
 }

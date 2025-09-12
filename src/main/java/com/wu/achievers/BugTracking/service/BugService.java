@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.Bug;
 import com.wu.achievers.BugTracking.entity.User;
+import com.wu.achievers.BugTracking.exceptionHandling.NotFoundException;
 import com.wu.achievers.BugTracking.repository.BugRepo;
 import com.wu.achievers.BugTracking.util.JwtUtil;
 
@@ -15,91 +16,117 @@ import com.wu.achievers.BugTracking.util.JwtUtil;
 public class BugService {
 
     @Autowired
-    private BugRepo bugRepo;
+    private BugRepo bugRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserService userServcie;
+    private UserService userService;
 
-    public List<Bug> getAllBugs(Long projectId, String status, Long assignedTo, String priority, Date startDate, Date endDate) {
-       
-         return bugRepo.searchBugs(projectId, status, assignedTo, priority, startDate, endDate);
+    public List<Bug> fetchAllBugs(Long projectId, String status, Long assigneeId, String priority, Date startDate, Date endDate) {
+        return bugRepository.searchBugs(projectId, status, assigneeId, priority, startDate, endDate);
     }
 
-    public Bug getBugById(Long id, String token) {
-        String role = jwtUtil.extractRole(token);
-        Long userId = jwtUtil.extractUserId(token);
-        if ("Admin".equals(role)) {
-            return bugRepo.findById(id).orElse(null);
-        } else if("Manager".equals(role)) {
-            Bug bug = bugRepo.findById(id).orElse(null);
-            if(bug != null && bugRepo.findByProjectManagerId(userId).contains(bug)) {
-                return bug;
-            }
-            return null;
+    public Bug fetchBugById(Long bugId, String jwtToken) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        Long userId = jwtUtil.extractUserId(jwtToken);
+        Bug bug = bugRepository.findById(bugId).orElse(null);
+        if (bug == null) {
+            throw new NotFoundException("Bug with id " + bugId + " not found");
         }
-        return bugRepo.findById(id).orElse(null);
-    }
-
-    public Bug createBug(Bug bug, String token) {
-        String role = jwtUtil.extractRole(token);
-        Long userId = jwtUtil.extractUserId(token);
-        List<User> users = userServcie.getUsersByManagerId(userId, token);
-        if ("Admin".equals(role)) {
-            return bugRepo.save(bug);
-        } else if("Manager".equals(role)) {
-            if(users.stream().anyMatch(u -> u.getUserID().equals(bug.getAssignedTo()))) {
-                return bugRepo.save(bug);
-            }
-        }
-        return null;
-    }
-
-    public Bug updateBug(Bug bug, String token) {
-        String role = jwtUtil.extractRole(token);
-        Long userId = jwtUtil.extractUserId(token);
-        System.out.println("Update Bug Role: " + role); // Debugging line
-        if (bugRepo.existsById(bug.getBugID())) {
-            if("Admin".equals(role)) {
-                return bugRepo.save(bug);
-            } else if("Manager".equals(role)) {
-                boolean existsOrNot = userServcie.checkUserByManagerIdAndUserId(userId, bug.getAssignedTo());
-                System.out.println(existsOrNot);
-                if(existsOrNot) {
-                    System.out.println("Manager updating bug");
-                    return bugRepo.save(bug);
+        if (userRole != null) {
+            switch (userRole) {
+                case "Admin" -> {
+                    return bug;
                 }
-                
-            } else if("Developer".equals(role) || "Tester".equals(role)) {
-                Bug existingBug = bugRepo.findById(bug.getBugID()).orElseThrow();
-                if(existingBug != null && existingBug.getAssignedTo().equals(userId)) {
+                case "Manager" -> {
+                    if (bugRepository.findByProjectManagerId(userId).contains(bug)) {
+                        return bug;
+                    }
+                    throw new NotFoundException("Bug with id " + bugId + " not found or not under your management");
+                }
+                case "Developer", "Tester" -> {
+                    if (!bug.getAssigneeId().equals(userId)) {
+                        throw new NotFoundException("Bug with id " + bugId + " not found or not assigned to you");
+                    }
+                }
+                default -> {
+                }
+            }
+        }
+        return bug;
+    }
+
+    public Bug createBug(Bug bug, String jwtToken) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        Long userId = jwtUtil.extractUserId(jwtToken);
+        List<User> managedUsers = userService.fetchUsersByManagerId(userId, jwtToken);
+        if ("Admin".equals(userRole)) {
+            return bugRepository.save(bug);
+        } else if ("Manager".equals(userRole)) {
+            if (managedUsers.stream().anyMatch(u -> u.getUserId().equals(bug.getAssigneeId()))) {
+                return bugRepository.save(bug);
+            }
+            throw new NotFoundException("Cannot assign bug to user not under your management");
+        }
+        throw new NotFoundException("Only Admin or Manager can create bugs");
+    }
+
+    public Bug updateBug(Bug bug, String jwtToken) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        Long userId = jwtUtil.extractUserId(jwtToken);
+        Bug existingBug = bugRepository.findById(bug.getBugId()).orElseThrow();
+        if (userRole != null) {
+            switch (userRole) {
+                case "Admin" -> {
+                    return bugRepository.save(bug);
+                }
+                case "Manager" -> {
+                    // Update all fields except bugID and projectID
+                    existingBug.setEnvironment(bug.getEnvironment());
+                    existingBug.setBugDescription(bug.getBugDescription());
+                    existingBug.setPriority(bug.getPriority());
+                    existingBug.setStartDate(bug.getStartDate());
                     existingBug.setStatus(bug.getStatus());
-                    existingBug.setEndDate(bug.getEndDate());
-                    return bugRepo.save(existingBug);
+                    existingBug.setAssigneeId(bug.getAssigneeId());
+                    boolean isManagedUser = userService.checkUserByManagerIdAndUserId(userId, bug.getAssigneeId());
+                    if (isManagedUser) {
+                        return bugRepository.save(bug);
+                    }
+                    throw new NotFoundException("Cannot assign bug to user not under your management");
+                }
+                case "Developer", "Tester" -> {
+                    if (existingBug != null && existingBug.getAssigneeId().equals(userId)) {
+                        existingBug.setStatus(bug.getStatus());
+                        existingBug.setEndDate(bug.getEndDate());
+                        return bugRepository.save(existingBug);
+                    }
+                    throw new NotFoundException("Cannot update bug not assigned to you");
+                }
+                default -> {
                 }
             }
         }
-        return null;
+        throw new NotFoundException("Bug not found");
     }
 
-    public boolean deleteBug(Long id, String token) {
-        String role = jwtUtil.extractRole(token);
-        Long userId = jwtUtil.extractUserId(token);
-        if (bugRepo.existsById(id)) {
-            if("Admin".equals(role)) {
-                bugRepo.deleteById(id);
-                return true;
-            } else if("Manager".equals(role)) {
-                Bug bug = bugRepo.findById(id).orElse(null);
-                if(bug != null && bugRepo.findByProjectManagerId(userId).contains(bug)) {
-                    bugRepo.deleteById(id);
-                    return true;
+    public Bug deleteBug(Long bugId, String jwtToken) {
+        String userRole = jwtUtil.extractRole(jwtToken);
+        Long userId = jwtUtil.extractUserId(jwtToken);
+        if (bugRepository.existsById(bugId)) {
+            Bug bug = bugRepository.findById(bugId).orElse(null);
+            if ("Admin".equals(userRole)) {
+                bugRepository.deleteById(bugId);
+                return bug;
+            } else if ("Manager".equals(userRole)) {
+                if (bug != null && bugRepository.findByProjectManagerId(userId).contains(bug)) {
+                    bugRepository.deleteById(bugId);
+                    return bug;
                 }
+                throw new NotFoundException("Bug with id " + bugId + " not found or not under your management");
             }
         }
-        return false;
+        throw new NotFoundException("Bug not found");
     }
-
 }

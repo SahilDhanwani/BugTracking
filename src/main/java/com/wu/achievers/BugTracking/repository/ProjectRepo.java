@@ -11,7 +11,8 @@ import com.wu.achievers.BugTracking.entity.Project;
 @Repository
 public interface ProjectRepo extends JpaRepository<Project, Long> {
 
-    @Query("SELECT p FROM Project p WHERE p.managerID=?1")
+    @Query("SELECT p FROM Project p WHERE p.managerId=?1")
     List<Project> findByManagerId(Long managerId);
 
 }
+    
