@@ -18,8 +18,9 @@ public interface UserRepo extends JpaRepository<User, Long> {
     List<User> findByManagerID(Long managerId);
 
     @Query("SELECT u FROM User u WHERE u.managerID = :managerId AND u.userID = :userId")
-    User checkByManagerIdAndUserId(@Param("managerId") Long managerId, @Param("userId") Long userId);
+    Optional<User> checkByManagerIdAndUserId(@Param("managerId") Long managerId, @Param("userId") Long userId);
 
+    // This function is to be depreciated in v2.0
     @Query("SELECT A.userID FROM User A WHERE A.managerID = ?1")
     List<Long> getIdsByManagerId(Long managerId);
 }
