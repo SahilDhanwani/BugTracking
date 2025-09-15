@@ -14,6 +14,15 @@ import com.wu.achievers.BugTracking.util.JwtUtil;
 @Service
 public class ProjectService {
 
+    @Autowired
+    private ProjectRepo projectRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
+
     public List<Project> fetchAllProjects(String token) {
         String role = jwtUtil.extractRole(token);
         List<Project> project;
@@ -50,15 +59,6 @@ public class ProjectService {
         }
         projectRepository.deleteById(projectId);
     }
-
-    @Autowired
-    private ProjectRepo projectRepository;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private UserService userService;
 
     public Project fetchProjectById(String jwtToken, long projectId) {
         String userRole = jwtUtil.extractRole(jwtToken);
