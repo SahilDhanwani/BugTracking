@@ -25,18 +25,17 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-   @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> {}) // enable CORS (configured separately in CorsConfig)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> {
+                }) // enable CORS (configured separately in CorsConfig)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/api/login").permitAll()
                 .requestMatchers("/api/signup").permitAll()
-    
                 .requestMatchers(
                         "/swagger-ui.html",
                         "/swagger-ui/**",
@@ -67,7 +66,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -77,7 +75,8 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-       @Bean
+
+    @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
@@ -90,5 +89,5 @@ public class SecurityConfig {
                         .allowCredentials(true);
             }
         };
-}
+    }
 }

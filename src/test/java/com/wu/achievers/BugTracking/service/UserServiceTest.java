@@ -56,8 +56,7 @@ public class UserServiceTest {
     void testSignup_ExistingUser() {
         User user = new User(null, "Test", "User", "existing@example.com", "pass", "Admin", null);
         Mockito.when(userRepo.findByEmail("existing@example.com")).thenReturn(Optional.of(user));
-        User created = userService.registerUser(user);
-        assertNull(created);
+        assertThrows(com.wu.achievers.BugTracking.exceptionHandling.BadRequestException.class, () -> userService.registerUser(user));
     }
 
     @Test

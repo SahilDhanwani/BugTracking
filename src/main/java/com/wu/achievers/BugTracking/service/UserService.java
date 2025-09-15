@@ -1,9 +1,11 @@
 package com.wu.achievers.BugTracking.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -15,6 +17,9 @@ import com.wu.achievers.BugTracking.exceptionHandling.BadRequestException;
 import com.wu.achievers.BugTracking.exceptionHandling.NotFoundException;
 import com.wu.achievers.BugTracking.repository.UserRepo;
 import com.wu.achievers.BugTracking.util.JwtUtil;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class UserService {
@@ -115,26 +120,31 @@ public class UserService {
         return newUser;
     }
 
-    public String authenticateUser(String email, String password) {
+    public ResponseEntity<?> authenticateUser(String email, String password, HttpServletResponse response) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
             User user = userRepository.findByEmail(email).orElseThrow();
-            return jwtUtil.generateToken(email, user.getRole(), user.getUserId());
+            String jwt = jwtUtil.generateToken(email, user.getRole(), user.getUserId());
+            Cookie cookie = new Cookie("JWT", jwt);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(3600);
+
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(Map.of(
+                    "token", jwt,
+                    "user", user.getFirstname()
+            ));
+
         } catch (AuthenticationException e) {
             throw new BadRequestException("Invalid credentials");
         }
-    }
 
-public User getUserFromToken(String token) {
-    if (token.startsWith("Bearer ")) {
-        token = token.substring(7);
     }
-    Long userId = jwtUtil.extractUserId(token);
-    return userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-}
 
     // Function not used by controller directly
     public boolean existsUserByManagerId(Long managerId, Long userId) {

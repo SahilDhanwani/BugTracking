@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/home")
 public class homecontroller {
 
-
     @GetMapping
     public String home() {
         return "Welcome to the Bug Tracking System";

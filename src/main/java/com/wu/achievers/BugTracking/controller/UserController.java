@@ -1,12 +1,10 @@
 package com.wu.achievers.BugTracking.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.wu.achievers.BugTracking.entity.User;
 import com.wu.achievers.BugTracking.service.UserService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
@@ -55,38 +52,10 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody User user, HttpServletResponse response) {
-        try {
-            String jwt = userService.authenticateUser(user.getEmail(), user.getPassword());
-            Cookie cookie = new Cookie("JWT", jwt);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(3600);
-
-            response.addCookie(cookie);
-            User loggedInUser = userService.getUserFromToken(jwt);
-            
-            return ResponseEntity.ok(Map.of(
-                "token", jwt,
-                "user", loggedInUser.getFirstname()
-            ));
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                             .body(Map.of("error", "Invalid credentials"));
-        }
-
+        return userService.authenticateUser(user.getEmail(), user.getPassword(), response);
     }
 
-// @GetMapping("/me")
-// public ResponseEntity<User> getCurrentUser(Authentication authentication) {
-//     String email = authentication.getName(); // from JWT subject
-//     System.out.println("Authenticated user email: " + email);
-//     User user = userRepo.findByEmail(email)
-//             .orElseThrow(() -> new RuntimeException("User not found"));
-//     return ResponseEntity.ok(user);
-// }
-
-
+    
     @PutMapping("/users")
     public ResponseEntity<User> updateUserDetails(@RequestBody User user, @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(userService.updateUserDetails(user, token));
