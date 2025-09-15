@@ -109,10 +109,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token); // <-- get "Admin", "Manager", etc.
-
                 // Map role claim into Spring authority
-                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
-
+                SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_"+role.toUpperCase());
+                
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 email,
