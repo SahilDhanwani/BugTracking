@@ -14,8 +14,30 @@ import com.wu.achievers.BugTracking.util.JwtUtil;
 @Service
 public class ProjectService {
 
-    public List<Project> fetchAllProjects(String jwtToken) {
-        return getProjectsByRole(jwtToken);
+    public List<Project> fetchAllProjects(String token) {
+        String role = jwtUtil.extractRole(token);
+        List<Project> project;
+        if (role.equals("Admin")) {
+            project = projectRepository.findAll();
+            if (project.isEmpty()) {
+                throw new NotFoundException("No projects found");
+            }
+            return project;
+        } else if (role.equals("Manager")) {
+            project = projectRepository.findByManagerId(jwtUtil.extractUserId(token));
+            if (project.isEmpty()) {
+                throw new NotFoundException("No projects found under your management");
+            }
+            return project;
+        }
+
+        Long managerId = userService.fetchUserById(jwtUtil.extractUserId(token), token).getManagerId();
+
+        project = projectRepository.findByManagerId(managerId);
+        if (project.isEmpty()) {
+            throw new NotFoundException("You are not assigned to any project");
+        }
+        return project;
     }
 
     public void removeProject(Long projectId, String jwtToken) {
@@ -100,29 +122,5 @@ public class ProjectService {
         return projectRepository.findByManagerId(managerId);
     }
 
-    public List<Project> getProjectsByRole(String token) {
-        String role = jwtUtil.extractRole(token);
-        List<Project> project;
-        if (role.equals("Admin")) {
-            project = projectRepository.findAll();
-            if (project.isEmpty()) {
-                throw new NotFoundException("No projects found");
-            }
-            return project;
-        } else if (role.equals("Manager")) {
-            project = projectRepository.findByManagerId(jwtUtil.extractUserId(token));
-            if (project.isEmpty()) {
-                throw new NotFoundException("No projects found under your management");
-            }
-            return project;
-        }
-
-        Long managerId = userService.fetchUserById(jwtUtil.extractUserId(token), token).getManagerId();
-
-        project = projectRepository.findByManagerId(managerId);
-        if (project.isEmpty()) {
-            throw new NotFoundException("You are not assigned to any project");
-        }
-        return project;
-    }
+    
 }

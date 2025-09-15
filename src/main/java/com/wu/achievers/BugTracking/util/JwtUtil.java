@@ -1,5 +1,6 @@
 package com.wu.achievers.BugTracking.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ public class JwtUtil {
 
     // Use a static secret for demonstration; in production, store securely
     private final javax.crypto.SecretKey key =
-            Keys.hmacShaKeyFor("YourSuperSecretKeyForJWTsMustBeAtLeast256BitsLong!".getBytes());
+            Keys.hmacShaKeyFor("YourSuperSecretKeyForJWTsMustBeAtLeast256BitsLong!".getBytes(StandardCharsets.UTF_8));
 
     private final long EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour in ms
 
