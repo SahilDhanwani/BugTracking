@@ -13,8 +13,8 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtil {
 
     // Use a static secret for demonstration; in production, store securely
-    private final javax.crypto.SecretKey key =
-            Keys.hmacShaKeyFor("YourSuperSecretKeyForJWTsMustBeAtLeast256BitsLong!".getBytes(StandardCharsets.UTF_8));
+    private final javax.crypto.SecretKey key
+            = Keys.hmacShaKeyFor("Welcome to Bug Tracking Application created by: Team @Achievers! ".getBytes(StandardCharsets.UTF_8));
 
     private final long EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour in ms
 
@@ -58,7 +58,6 @@ public class JwtUtil {
     }
 
     // ----------------- NEW METHODS -----------------
-
     // Extract username (email) from token
     public String extractUsername(String token) {
         String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;

@@ -33,7 +33,7 @@ public class UserControllerTest {
     private UserController userController;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(userController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -82,7 +82,7 @@ public class UserControllerTest {
     @Test
     void testSignup_EmailExists() throws Exception {
         User user = new User(null, "Test", "User", "existing@example.com", "pass", "Admin", null);
-    when(userService.fetchUserByEmail("existing@example.com")).thenReturn(Optional.of(user));
+        when(userService.fetchUserByEmail("existing@example.com")).thenReturn(Optional.of(user));
         String json = "{\"firstname\":\"Test\",\"lastname\":\"User\",\"email\":\"existing@example.com\",\"password\":\"pass\",\"role\":\"Admin\"}";
         mockMvc.perform(post("/api/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -90,33 +90,34 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     void testLogin_Success() throws Exception {
-    when(userService.authenticateUser(eq("login@example.com"), eq("pass"))).thenReturn("jwt-token");
+        User user = new User(1L, "Test", "User", "login@example.com", "pass", "Admin", null);
+        org.springframework.http.ResponseEntity<?> responseEntity = org.springframework.http.ResponseEntity.ok(java.util.Map.of("token", "jwt-token", "user", user.getFirstname()));
+        when(userService.authenticateUser(eq("login@example.com"), eq("pass"), any())).thenReturn((org.springframework.http.ResponseEntity) responseEntity);
         String json = "{\"email\":\"login@example.com\",\"password\":\"pass\"}";
         mockMvc.perform(post("/api/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Login successful jwt-token")));
+                .andExpect(jsonPath("$.token").value("jwt-token"));
     }
 
     @Test
     void testLogin_InvalidCredentials() throws Exception {
-        //User user = new User(null, "Test", "User", "loginfail@example.com", "wrongpass", "Admin", null);
-    when(userService.authenticateUser(eq("loginfail@example.com"), eq("wrongpass"))).thenReturn("Invalid credentials");
+        when(userService.authenticateUser(eq("loginfail@example.com"), eq("wrongpass"), any())).thenThrow(new com.wu.achievers.BugTracking.exceptionHandling.BadRequestException("Invalid credentials"));
         String json = "{\"email\":\"loginfail@example.com\",\"password\":\"wrongpass\"}";
         mockMvc.perform(post("/api/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
-                .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Invalid credentials")));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     void testUpdateUser() throws Exception {
         User user = new User(1L, "Test", "User", "user@example.com", "pass", "Admin", null);
-    when(userService.updateUserDetails(any(User.class), anyString())).thenReturn(user);
+        when(userService.updateUserDetails(any(User.class), anyString())).thenReturn(user);
         String json = "{\"userID\":1,\"firstname\":\"Test\",\"lastname\":\"User\",\"email\":\"user@example.com\",\"password\":\"pass\",\"role\":\"Admin\"}";
         mockMvc.perform(put("/api/users")
                 .header("Authorization", "token")
@@ -128,10 +129,8 @@ public class UserControllerTest {
 
     @Test
     void testDeleteUser() throws Exception {
-    doNothing().when(userService).removeUser(eq(1L), anyString());
-    mockMvc.perform(delete("/api/users/1").header("Authorization", "token"))
-        .andExpect(status().isOk());
-        mockMvc.perform(delete("/api/users/1"))
+        doNothing().when(userService).removeUser(eq(1L), anyString());
+        mockMvc.perform(delete("/api/users/1").header("Authorization", "token"))
                 .andExpect(status().isOk());
     }
 }
