@@ -154,4 +154,8 @@ public User getUserFromToken(String token) {
     public boolean existsUserById(long userId) {
         return userRepository.existsById(userId);
     }
+
+    public List<User> fetchAllManagers(String token) {
+        return userRepository.findByRole("Manager");
+    }
 }

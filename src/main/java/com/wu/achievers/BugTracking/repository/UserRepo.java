@@ -24,4 +24,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
     // This function is to be depreciated in v2.0
     @Query("SELECT A.userId FROM User A WHERE A.managerId = ?1")
     List<Long> getIdsByManagerId(Long managerId);
+
+    @Query("SELECT A FROM User A WHERE A.role = ?1")
+    List<User> findByRole(String role);
 }

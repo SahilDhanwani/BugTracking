@@ -1,12 +1,15 @@
 package com.wu.achievers.BugTracking.service;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.wu.achievers.BugTracking.entity.Bug;
+import com.wu.achievers.BugTracking.entity.Project;
 import com.wu.achievers.BugTracking.entity.User;
 import com.wu.achievers.BugTracking.exceptionHandling.NotFoundException;
 import com.wu.achievers.BugTracking.repository.BugRepo;
@@ -24,7 +27,37 @@ public class BugService {
     @Autowired
     private UserService userService;
 
-    public List<Bug> fetchAllBugs(Long projectId, String status, Long assigneeId, String priority, Date startDate, Date endDate) {
+    @Autowired
+    private ProjectService projectService;
+
+    public List<Bug> fetchAllBugs(List<Long> projectId, String status, List<Long> assigneeId, String priority, Date startDate, Date endDate, String token) {
+        String role = jwtUtil.extractRole(token);
+        Long userId = jwtUtil.extractUserId(token);
+        if(role.equals("Developer") || role.equals("Tester")) {
+            //Long managerId = userService.fetchUserById(userId, token).getManagerId();
+            assigneeId = Collections.singletonList(userId);
+        }
+        else if(role.equals("Manager")) {
+            List<User> managedUsers = userService.fetchAllUsers(token);
+            List<Project> managedProjects = projectService.fetchProjectsByManagerId(userId);
+            List<Long> managedUserIds = managedUsers.stream()
+                                  .map(User::getUserId)
+                                  .collect(Collectors.toList());
+            List<Long> managedProjectIds = managedProjects.stream()
+                                  .map(Project::getProjectId)
+                                  .collect(Collectors.toList());
+            if(assigneeId == null) {
+                assigneeId = managedUserIds;
+            }
+            if(projectId == null) {
+                projectId = managedProjectIds;
+            }
+            boolean validUserId = managedUserIds.containsAll(assigneeId);
+            boolean validProjectId = managedProjectIds.containsAll(projectId);
+            if(!validProjectId || !validUserId) {
+                throw new IllegalArgumentException("Entered IDs are not valid.");
+            }
+        }
         return bugRepository.searchBugs(projectId, status, assigneeId, priority, startDate, endDate);
     }
 

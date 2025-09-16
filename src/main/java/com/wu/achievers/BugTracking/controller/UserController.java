@@ -77,15 +77,6 @@ public class UserController {
 
     }
 
-// @GetMapping("/me")
-// public ResponseEntity<User> getCurrentUser(Authentication authentication) {
-//     String email = authentication.getName(); // from JWT subject
-//     System.out.println("Authenticated user email: " + email);
-//     User user = userRepo.findByEmail(email)
-//             .orElseThrow(() -> new RuntimeException("User not found"));
-//     return ResponseEntity.ok(user);
-// }
-
 
     @PutMapping("/users")
     public ResponseEntity<User> updateUserDetails(@RequestBody User user, @RequestHeader("Authorization") String token) {
@@ -96,5 +87,10 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         userService.removeUser(id, token);
         return ResponseEntity.ok("User Deleted");
+    }
+
+    @GetMapping("/managers")
+    public ResponseEntity<List<User>> fetchAllManagers(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(userService.fetchAllManagers(token));
     }
 }
